@@ -1,5 +1,5 @@
 
-import { BarChart3, Calendar, File, Users, ArrowUp, ArrowDown } from "lucide-react";
+import { BarChart3, Calendar, File, Users } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import ActivityChart from "@/components/dashboard/ActivityChart";

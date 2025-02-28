@@ -7,6 +7,50 @@
 
 @layer base {
   :root {
+    --background: 225 25% 14%;
+    --foreground: 0 0% 98%;
+
+    --card: 229 22% 15%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 229 22% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 25 100% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 212 71% 26%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 223 19% 20%;
+    --muted-foreground: 215 20% 75%;
+
+    --accent: 262 83% 64%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 358 68% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 145 63% 46%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 223 15% 22%;
+    --input: 223 15% 22%;
+    --ring: 25 100% 62%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 229 28% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 25 100% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 229 26% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 229 26% 18%;
+    --sidebar-ring: 25 100% 62%;
+  }
+
+  .light {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -16,10 +60,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 25 100% 50%; /* Safety Orange */
+    --primary: 25 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 209 77% 21%; /* Deep Blue */
+    --secondary: 209 77% 21%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
@@ -28,55 +72,11 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%; /* Alert Red */
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --success: 145 63% 42%; /* Success Green */
-    --success-foreground: 0 0% 100%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 25 100% 50%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 209 77% 21%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 25 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 26%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 209 77% 26%;
-    --sidebar-ring: 25 100% 50%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 25 100% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 209 77% 21%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
     --ring: 25 100% 50%;
   }
 }
@@ -96,11 +96,11 @@
 }
 
 .stat-card {
-  @apply p-6 rounded-lg bg-white border border-gray-100 shadow-sm transition-all duration-300 ease-in-out;
+  @apply p-6 rounded-lg bg-card border border-border shadow-md transition-all duration-300 ease-in-out backdrop-blur-sm;
 }
 
 .stat-card:hover {
-  @apply shadow-md border-gray-200 transform -translate-y-1;
+  @apply shadow-lg border-primary/30 transform -translate-y-1;
 }
 
 .progress-bar {
@@ -112,11 +112,16 @@
 }
 
 .document-card {
-  @apply p-4 border border-gray-100 rounded-lg transition-all duration-300 ease-in-out;
+  @apply p-4 border border-border rounded-lg transition-all duration-300 ease-in-out bg-card/80 backdrop-blur-sm;
 }
 
 .document-card:hover {
-  @apply shadow-md border-gray-200;
+  @apply shadow-md border-accent/30;
+}
+
+/* Glass effect for cards */
+.glass-card {
+  @apply bg-card/80 backdrop-blur-md border border-white/10;
 }
 
 /* Custom scrollbar */
@@ -129,25 +134,25 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded-full;
+  @apply bg-muted-foreground/30 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
+  @apply bg-muted-foreground/50;
 }
 
 /* File upload zone */
 .upload-zone {
-  @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-300 ease-in-out;
+  @apply border-2 border-dashed border-border rounded-lg p-8 text-center transition-all duration-300 ease-in-out bg-card/50;
 }
 
 .upload-zone-active {
-  @apply border-primary bg-primary/5;
+  @apply border-primary bg-primary/10;
 }
 
 /* Calendar */
 .calendar-day {
-  @apply aspect-square flex items-center justify-center rounded-md hover:bg-gray-100 transition-colors p-2 relative;
+  @apply aspect-square flex items-center justify-center rounded-md hover:bg-muted transition-colors p-2 relative;
 }
 
 .calendar-day-active {
@@ -167,12 +172,12 @@
 }
 
 .calendar-event.industrial {
-  @apply bg-green-600/20 text-green-700;
+  @apply bg-success-green/20 text-success-green;
 }
 
 /* Training profiles */
 .trainer-avatar {
-  @apply w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm;
+  @apply w-10 h-10 rounded-full object-cover border-2 border-card shadow-sm;
 }
 
 .trainer-avatar-stack {
@@ -211,4 +216,43 @@
   100% {
     background-position: 0% 50%;
   }
+}
+
+/* Elegant gradient backgrounds */
+.gradient-purple {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(79, 70, 229, 0.15) 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, rgba(255, 138, 61, 0.15) 0%, rgba(244, 114, 182, 0.1) 100%);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, rgba(14, 71, 119, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, rgba(46, 189, 107, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+}
+
+/* Elegant card styles */
+.elegant-card {
+  @apply bg-card border border-white/5 shadow-xl rounded-xl overflow-hidden backdrop-blur-sm;
+}
+
+.elegant-card:hover {
+  @apply border-white/10 shadow-2xl;
+}
+
+/* Elegant button styles */
+.btn-elegant {
+  @apply relative overflow-hidden transition-all duration-300 bg-primary/80 hover:bg-primary text-white rounded-md px-6 py-2.5;
+}
+
+.btn-elegant:before {
+  @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/5 transform -skew-x-12 -translate-x-full transition-transform duration-700;
+}
+
+.btn-elegant:hover:before {
+  @apply translate-x-[110%];
 }

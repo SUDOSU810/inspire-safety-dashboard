@@ -63,11 +63,16 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Brand Colors
-				"safety-orange": "#FF7F00",
-				"deep-blue": "#0A3D62",
-				"alert-red": "#E74C3C",
-				"success-green": "#27AE60",
+				// Brand Colors - Refined for dark theme
+				"safety-orange": "#FF8A3D", // Slightly softened orange
+				"deep-blue": "#0E4777", // Richer blue
+				"alert-red": "#E45A51", // Softer alert red
+				"success-green": "#2EBD6B", // Vibrant success green
+				"royal-purple": "#8B5CF6", // New accent color
+				"navy-dark": "#1A1F2C", // Dark background color
+				"slate-dark": "#222233", // Secondary dark color
+				"gunmetal": "#2D3142", // Dark card background
+				"charcoal": "#2A2D3A", // Alternative dark background
 			},
 			fontFamily: {
 				montserrat: ["Montserrat", "sans-serif"],
@@ -125,6 +130,14 @@ export default {
 						opacity: '1'
 					}
 				},
+				'glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px rgba(139, 92, 246, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(139, 92, 246, 0.8)' 
+					}
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -132,6 +145,7 @@ export default {
 				'fade-in': 'fade-in 0.4s ease-out',
 				'slide-in': 'slide-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
+				'glow': 'glow 3s ease-in-out infinite',
 			}
 		}
 	},

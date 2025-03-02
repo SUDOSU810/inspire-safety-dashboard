@@ -63,16 +63,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Brand Colors - Refined for dark theme
-				"safety-orange": "#FF8A3D", // Slightly softened orange
-				"deep-blue": "#0E4777", // Richer blue
-				"alert-red": "#E45A51", // Softer alert red
-				"success-green": "#2EBD6B", // Vibrant success green
-				"royal-purple": "#8B5CF6", // New accent color
-				"navy-dark": "#1A1F2C", // Dark background color
-				"slate-dark": "#222233", // Secondary dark color
-				"gunmetal": "#2D3142", // Dark card background
-				"charcoal": "#2A2D3A", // Alternative dark background
+				// Black, white, and green color palette
+				"success-green": "#2EBD6B", // Main green
+				"light-green": "#4FCB87", // Lighter shade
+				"dark-green": "#1A9953", // Darker shade
+				"pale-green": "#F2FCE2", // Very light green for subtle backgrounds
+				"black": "#000000",
+				"off-black": "#1A1A1A",
+				"dark-gray": "#222222",
+				"medium-gray": "#333333",
+				"light-gray": "#555555",
+				"white": "#FFFFFF",
+				"off-white": "#F8F8F8",
 			},
 			fontFamily: {
 				montserrat: ["Montserrat", "sans-serif"],
@@ -132,10 +134,10 @@ export default {
 				},
 				'glow': {
 					'0%, 100%': { 
-						boxShadow: '0 0 5px rgba(139, 92, 246, 0.5)' 
+						boxShadow: '0 0 5px rgba(46, 189, 107, 0.5)' 
 					},
 					'50%': { 
-						boxShadow: '0 0 20px rgba(139, 92, 246, 0.8)' 
+						boxShadow: '0 0 20px rgba(46, 189, 107, 0.8)' 
 					}
 				}
 			},

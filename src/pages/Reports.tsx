@@ -48,9 +48,9 @@ const lineData = [
 ];
 
 const pieData = [
-  { name: "Fire Safety", value: 45, color: "#FF8A3D" },
-  { name: "Road Safety", value: 30, color: "#0E4777" },
-  { name: "Industrial Safety", value: 25, color: "#2EBD6B" },
+  { name: "Fire Safety", value: 45, color: "#2EBD6B" },
+  { name: "Road Safety", value: 30, color: "#1A9953" },
+  { name: "Industrial Safety", value: 25, color: "#4FCB87" },
 ];
 
 const regionData = [
@@ -101,9 +101,9 @@ const Reports = () => {
                           labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
                         />
                         <Legend />
-                        <Bar dataKey="fire" name="Fire Safety" fill="#FF8A3D" />
-                        <Bar dataKey="road" name="Road Safety" fill="#0E4777" />
-                        <Bar dataKey="industrial" name="Industrial Safety" fill="#2EBD6B" />
+                        <Bar dataKey="fire" name="Fire Safety" fill="#2EBD6B" />
+                        <Bar dataKey="road" name="Road Safety" fill="#1A9953" />
+                        <Bar dataKey="industrial" name="Industrial Safety" fill="#4FCB87" />
                       </ReBarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -160,8 +160,8 @@ const Reports = () => {
                           labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
                         />
                         <Legend />
-                        <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#8B5CF6" strokeWidth={2} />
-                        <Line type="monotone" dataKey="participants" name="Participants" stroke="#FF8A3D" strokeWidth={2} />
+                        <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#4FCB87" strokeWidth={2} />
+                        <Line type="monotone" dataKey="participants" name="Participants" stroke="#2EBD6B" strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -189,10 +189,10 @@ const Reports = () => {
                           className="h-2 bg-muted" 
                           indicatorClassName={
                             region.completion > 80 
-                              ? "bg-gradient-to-r from-success-green to-success-green/70"
+                              ? "bg-gradient-to-r from-success-green to-light-green/70"
                               : region.completion > 70
-                                ? "bg-gradient-to-r from-safety-orange to-safety-orange/70"
-                                : "bg-gradient-to-r from-deep-blue to-deep-blue/70"
+                                ? "bg-gradient-to-r from-light-green to-light-green/70"
+                                : "bg-gradient-to-r from-dark-green to-dark-green/70"
                           } 
                         />
                       </div>
@@ -209,8 +209,8 @@ const Reports = () => {
                   <CardDescription>Interactive performance dashboard coming soon</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-                  <div className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center mb-4">
-                    <BarChart className="h-8 w-8 text-royal-purple" />
+                  <div className="w-16 h-16 rounded-full gradient-green flex items-center justify-center mb-4">
+                    <BarChart className="h-8 w-8 text-success-green" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">Performance Dashboard</h3>
                   <p className="text-muted-foreground max-w-md mb-6">
@@ -228,8 +228,8 @@ const Reports = () => {
                   <CardDescription>Region-wise training breakdown coming soon</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-                  <div className="w-16 h-16 rounded-full gradient-blue flex items-center justify-center mb-4">
-                    <PieChart className="h-8 w-8 text-deep-blue" />
+                  <div className="w-16 h-16 rounded-full gradient-dark flex items-center justify-center mb-4">
+                    <PieChart className="h-8 w-8 text-dark-green" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">Regional Dashboard</h3>
                   <p className="text-muted-foreground max-w-md mb-6">

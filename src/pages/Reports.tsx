@@ -72,13 +72,175 @@ const Reports = () => {
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <Tabs defaultValue="overview" className="w-full md:w-auto">
-          <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="regional">Regional</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="w-full md:w-auto">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="regional">Regional</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-5 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="elegant-card overflow-hidden md:col-span-2">
+                  <CardHeader className="border-b border-white/5 bg-card/80">
+                    <CardTitle className="text-lg font-semibold text-white">Training Categories</CardTitle>
+                    <CardDescription>Monthly training sessions by category</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-6">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <ReBarChart
+                        data={barData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
+                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                        />
+                        <Legend />
+                        <Bar dataKey="fire" name="Fire Safety" fill="#FF8A3D" />
+                        <Bar dataKey="road" name="Road Safety" fill="#0E4777" />
+                        <Bar dataKey="industrial" name="Industrial Safety" fill="#2EBD6B" />
+                      </ReBarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                
+                <Card className="elegant-card overflow-hidden">
+                  <CardHeader className="border-b border-white/5 bg-card/80">
+                    <CardTitle className="text-lg font-semibold text-white">Distribution</CardTitle>
+                    <CardDescription>Training categories distribution</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-6 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height={250}>
+                      <RePieChart>
+                        <Pie
+                          data={pieData}
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          labelLine={false}
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
+                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                        />
+                      </RePieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <Card className="elegant-card overflow-hidden">
+                  <CardHeader className="border-b border-white/5 bg-card/80">
+                    <CardTitle className="text-lg font-semibold text-white">Weekly Trainings</CardTitle>
+                    <CardDescription>Training sessions and participants</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-6">
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart
+                        data={lineData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
+                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                        />
+                        <Legend />
+                        <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#8B5CF6" strokeWidth={2} />
+                        <Line type="monotone" dataKey="participants" name="Participants" stroke="#FF8A3D" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                
+                <Card className="elegant-card overflow-hidden">
+                  <CardHeader className="border-b border-white/5 bg-card/80">
+                    <CardTitle className="text-lg font-semibold text-white">Regional Performance</CardTitle>
+                    <CardDescription>Training completion rates by region</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-6 space-y-5">
+                    {regionData.map((region) => (
+                      <div key={region.name}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <span className="text-sm font-medium text-white/90">{region.name} Region</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm font-medium text-white/90">{region.completion}%</span>
+                            <TrendingUp size={14} className="text-success-green" />
+                          </div>
+                        </div>
+                        <Progress 
+                          value={region.completion} 
+                          className="h-2 bg-muted" 
+                          indicatorClassName={
+                            region.completion > 80 
+                              ? "bg-gradient-to-r from-success-green to-success-green/70"
+                              : region.completion > 70
+                                ? "bg-gradient-to-r from-safety-orange to-safety-orange/70"
+                                : "bg-gradient-to-r from-deep-blue to-deep-blue/70"
+                          } 
+                        />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="performance" className="mt-5">
+              <Card className="elegant-card animate-fade-in overflow-hidden">
+                <CardHeader className="border-b border-white/5 bg-card/80">
+                  <CardTitle className="text-lg font-semibold text-white">Performance Metrics</CardTitle>
+                  <CardDescription>Interactive performance dashboard coming soon</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
+                  <div className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center mb-4">
+                    <BarChart className="h-8 w-8 text-royal-purple" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Performance Dashboard</h3>
+                  <p className="text-muted-foreground max-w-md mb-6">
+                    Detailed performance metrics and KPIs for training programs and trainers will be available here soon.
+                  </p>
+                  <Button>Check Back Soon</Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="regional" className="mt-5">
+              <Card className="elegant-card animate-fade-in overflow-hidden">
+                <CardHeader className="border-b border-white/5 bg-card/80">
+                  <CardTitle className="text-lg font-semibold text-white">Regional Analysis</CardTitle>
+                  <CardDescription>Region-wise training breakdown coming soon</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
+                  <div className="w-16 h-16 rounded-full gradient-blue flex items-center justify-center mb-4">
+                    <PieChart className="h-8 w-8 text-deep-blue" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Regional Dashboard</h3>
+                  <p className="text-muted-foreground max-w-md mb-6">
+                    Detailed region-wise analysis of training programs, participation, and effectiveness will be available here soon.
+                  </p>
+                  <Button>Check Back Soon</Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
 
         <div className="flex items-center gap-2">
           <Select defaultValue="thisMonth">
@@ -103,166 +265,6 @@ const Reports = () => {
           </Button>
         </div>
       </div>
-
-      <TabsContent value="overview" className="mt-0 space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <Card className="elegant-card overflow-hidden md:col-span-2">
-            <CardHeader className="border-b border-white/5 bg-card/80">
-              <CardTitle className="text-lg font-semibold text-white">Training Categories</CardTitle>
-              <CardDescription>Monthly training sessions by category</CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 pt-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <ReBarChart
-                  data={barData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-                  <YAxis stroke="rgba(255,255,255,0.5)" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                    labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
-                  />
-                  <Legend />
-                  <Bar dataKey="fire" name="Fire Safety" fill="#FF8A3D" />
-                  <Bar dataKey="road" name="Road Safety" fill="#0E4777" />
-                  <Bar dataKey="industrial" name="Industrial Safety" fill="#2EBD6B" />
-                </ReBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          
-          <Card className="elegant-card overflow-hidden">
-            <CardHeader className="border-b border-white/5 bg-card/80">
-              <CardTitle className="text-lg font-semibold text-white">Distribution</CardTitle>
-              <CardDescription>Training categories distribution</CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 pt-6 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={250}>
-                <RePieChart>
-                  <Pie
-                    data={pieData}
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={false}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                    labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
-                  />
-                </RePieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <Card className="elegant-card overflow-hidden">
-            <CardHeader className="border-b border-white/5 bg-card/80">
-              <CardTitle className="text-lg font-semibold text-white">Weekly Trainings</CardTitle>
-              <CardDescription>Training sessions and participants</CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 pt-6">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={lineData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-                  <YAxis stroke="rgba(255,255,255,0.5)" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                    labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#8B5CF6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="participants" name="Participants" stroke="#FF8A3D" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          
-          <Card className="elegant-card overflow-hidden">
-            <CardHeader className="border-b border-white/5 bg-card/80">
-              <CardTitle className="text-lg font-semibold text-white">Regional Performance</CardTitle>
-              <CardDescription>Training completion rates by region</CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 pt-6 space-y-5">
-              {regionData.map((region) => (
-                <div key={region.name}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <span className="text-sm font-medium text-white/90">{region.name} Region</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium text-white/90">{region.completion}%</span>
-                      <TrendingUp size={14} className="text-success-green" />
-                    </div>
-                  </div>
-                  <Progress 
-                    value={region.completion} 
-                    className="h-2 bg-muted" 
-                    indicatorClassName={
-                      region.completion > 80 
-                        ? "bg-gradient-to-r from-success-green to-success-green/70"
-                        : region.completion > 70
-                          ? "bg-gradient-to-r from-safety-orange to-safety-orange/70"
-                          : "bg-gradient-to-r from-deep-blue to-deep-blue/70"
-                    } 
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="performance" className="mt-0">
-        <Card className="elegant-card animate-fade-in overflow-hidden">
-          <CardHeader className="border-b border-white/5 bg-card/80">
-            <CardTitle className="text-lg font-semibold text-white">Performance Metrics</CardTitle>
-            <CardDescription>Interactive performance dashboard coming soon</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-            <div className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center mb-4">
-              <BarChart className="h-8 w-8 text-royal-purple" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Performance Dashboard</h3>
-            <p className="text-muted-foreground max-w-md mb-6">
-              Detailed performance metrics and KPIs for training programs and trainers will be available here soon.
-            </p>
-            <Button>Check Back Soon</Button>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="regional" className="mt-0">
-        <Card className="elegant-card animate-fade-in overflow-hidden">
-          <CardHeader className="border-b border-white/5 bg-card/80">
-            <CardTitle className="text-lg font-semibold text-white">Regional Analysis</CardTitle>
-            <CardDescription>Region-wise training breakdown coming soon</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-            <div className="w-16 h-16 rounded-full gradient-blue flex items-center justify-center mb-4">
-              <PieChart className="h-8 w-8 text-deep-blue" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Regional Dashboard</h3>
-            <p className="text-muted-foreground max-w-md mb-6">
-              Detailed region-wise analysis of training programs, participation, and effectiveness will be available here soon.
-            </p>
-            <Button>Check Back Soon</Button>
-          </CardContent>
-        </Card>
-      </TabsContent>
     </DashboardLayout>
   );
 };

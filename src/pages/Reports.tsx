@@ -12,6 +12,7 @@ import {
   PieChart, 
   TrendingUp 
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   BarChart as ReBarChart,
   Bar,

@@ -63,11 +63,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Brand Colors
-				"safety-orange": "#FF7F00",
-				"deep-blue": "#0A3D62",
-				"alert-red": "#E74C3C",
-				"success-green": "#27AE60",
+				// Black, white, and green color palette
+				"success-green": "#2EBD6B", // Main green
+				"light-green": "#4FCB87", // Lighter shade
+				"dark-green": "#1A9953", // Darker shade
+				"pale-green": "#F2FCE2", // Very light green for subtle backgrounds
+				"black": "#000000",
+				"off-black": "#1A1A1A",
+				"dark-gray": "#222222",
+				"medium-gray": "#333333",
+				"light-gray": "#555555",
+				"white": "#FFFFFF",
+				"off-white": "#F8F8F8",
 			},
 			fontFamily: {
 				montserrat: ["Montserrat", "sans-serif"],
@@ -125,6 +132,14 @@ export default {
 						opacity: '1'
 					}
 				},
+				'glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px rgba(46, 189, 107, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(46, 189, 107, 0.8)' 
+					}
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -132,6 +147,7 @@ export default {
 				'fade-in': 'fade-in 0.4s ease-out',
 				'slide-in': 'slide-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
+				'glow': 'glow 3s ease-in-out infinite',
 			}
 		}
 	},

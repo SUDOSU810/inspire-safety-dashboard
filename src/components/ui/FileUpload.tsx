@@ -66,7 +66,7 @@ const FileUpload = ({
     if (validFiles.length !== newFiles.length) {
       toast({
         title: "Invalid file type",
-        description: `Only ${acceptedFileTypes.replace(/,/g, ', ')} files are allowed.`,
+        description: `Only ${acceptedFileTypes.replaceAll(',', ', ')} files are allowed.`,
         variant: "destructive"
       });
     }
@@ -135,7 +135,7 @@ const FileUpload = ({
             Browse Files
           </Button>
           <p className="text-xs text-muted-foreground mt-4">
-            Supported formats: {acceptedFileTypes.replace(/,/g, ', ')}
+            Supported formats: {acceptedFileTypes.replaceAll(',', ', ')}
           </p>
           <p className="text-xs text-muted-foreground">
             Max {maxFiles} files, 10MB each

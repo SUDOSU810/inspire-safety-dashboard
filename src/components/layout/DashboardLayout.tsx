@@ -11,8 +11,7 @@ import {
   Settings, 
   Users, 
   Bell, 
-  Search,
-  Flame
+  Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,14 +36,14 @@ const NavItem = ({ to, icon: Icon, label, active }: NavItemProps) => {
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 ${
+      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 ${
         active 
-          ? "bg-primary/20 text-primary border-l-2 border-primary" 
-          : "text-white/70 hover:bg-sidebar-accent/50 hover:text-white"
+          ? "bg-sidebar-accent text-white" 
+          : "text-white/80 hover:bg-sidebar-accent/50 hover:text-white"
       }`}
     >
-      <Icon size={18} />
-      <span className="font-medium">{label}</span>
+      <Icon size={20} />
+      <span>{label}</span>
     </Link>
   );
 };
@@ -72,19 +71,19 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`bg-sidebar fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out border-r border-sidebar-border ${
+        className={`bg-sidebar fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${
           sidebarOpen ? "w-64" : "w-20"
-        } flex flex-col backdrop-blur-lg`}
+        } flex flex-col`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
           <div className={`flex items-center gap-2 ${!sidebarOpen && "hidden"}`}>
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-safety-orange to-accent flex items-center justify-center shadow-lg">
-              <Flame className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-md bg-safety-orange flex items-center justify-center">
+              <span className="text-white font-bold">IS</span>
             </div>
-            <h1 className="text-white font-montserrat font-semibold tracking-tight">
+            <h1 className="text-white font-montserrat font-semibold">
               Inspire Safety
             </h1>
           </div>
@@ -94,12 +93,12 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
             onClick={toggleSidebar}
             className="text-white hover:bg-sidebar-accent"
           >
-            <Menu size={18} />
+            <Menu size={20} />
           </Button>
         </div>
 
-        <div className="flex-1 py-6 px-3 overflow-y-auto">
-          <nav className="space-y-1.5">
+        <div className="flex-1 py-4 overflow-y-auto">
+          <nav className="space-y-1 px-2">
             {navItems.map((item) => (
               <NavItem
                 key={item.to}
@@ -112,11 +111,11 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/30">
+        <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
-            <Avatar className="border border-white/10">
+            <Avatar>
               <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback className="bg-gradient-to-br from-safety-orange to-accent text-white">
+              <AvatarFallback className="bg-safety-orange text-white">
                 AD
               </AvatarFallback>
             </Avatar>
@@ -137,14 +136,14 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
         }`}
       >
         {/* Top navbar */}
-        <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30">
+        <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="w-full max-w-md">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search..."
-                className="w-full pl-8 bg-muted border-border/50"
+                className="w-full pl-8 bg-gray-50"
               />
             </div>
           </div>
@@ -152,19 +151,19 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-                  <Bell size={18} />
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell size={20} />
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-safety-orange text-white text-xs flex items-center justify-center">
                     3
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[300px] bg-card/95 backdrop-blur-lg border-white/10">
+              <DropdownMenuContent align="end" className="w-[300px]">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator />
                 <div className="max-h-[300px] overflow-y-auto">
                   {[1, 2, 3].map((i) => (
-                    <DropdownMenuItem key={i} className="flex flex-col items-start py-2 focus:bg-white/5">
+                    <DropdownMenuItem key={i} className="flex flex-col items-start py-2">
                       <div className="font-medium">New training scheduled</div>
                       <div className="text-xs text-muted-foreground">
                         Fire Safety Training in Chennai Region
@@ -180,23 +179,23 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative flex items-center gap-2 text-white" size="sm">
-                  <Avatar className="h-8 w-8 border border-white/10">
+                <Button variant="ghost" className="relative flex items-center gap-2" size="sm">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback className="bg-gradient-to-br from-safety-orange to-accent text-white">
+                    <AvatarFallback className="bg-safety-orange text-white">
                       AD
                     </AvatarFallback>
                   </Avatar>
                   <span className="font-medium text-sm">Admin</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur-lg border-white/10">
+              <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem className="focus:bg-white/5">Profile</DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-white/5">Settings</DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem className="text-destructive focus:bg-destructive/10">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
                   <span>Logout</span>
                 </DropdownMenuItem>

@@ -264,24 +264,16 @@ const Schedule = () => {
         </div>
       </div>
       
-      <Tabs value={selectedView} onValueChange={setSelectedView} defaultValue="month" className="w-full">
-        <div className="hidden">
-          <TabsList>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="day">Day</TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <TabsContent value="month">
-          <Card className="animate-fade-in elegant-card overflow-hidden">
+      <div className="grid grid-cols-1 gap-6">
+        <TabsContent value="month" className="m-0">
+          <Card className="animate-fade-in">
             <CardContent className="p-0">
               {/* Calendar Header - Days of Week */}
-              <div className="grid grid-cols-7 border-b border-border">
+              <div className="grid grid-cols-7 border-b">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
                   <div 
                     key={index} 
-                    className="p-3 text-center font-medium text-sm border-r last:border-r-0 border-border"
+                    className="p-3 text-center font-medium text-sm border-r last:border-r-0"
                   >
                     {day}
                   </div>
@@ -293,8 +285,8 @@ const Schedule = () => {
                 {calendarDays.map((day, index) => (
                   <div 
                     key={index} 
-                    className={`border-r border-b last:border-r-0 p-1 relative border-border ${
-                      !day.day ? "bg-muted/20" : ""
+                    className={`border-r border-b last:border-r-0 p-1 relative ${
+                      !day.day ? "bg-gray-50" : ""
                     }`}
                   >
                     {day.day && (
@@ -320,16 +312,16 @@ const Schedule = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="week">
-          <Card className="animate-fade-in elegant-card overflow-hidden">
-            <CardContent className="pt-6 p-5">
+        <TabsContent value="week" className="m-0">
+          <Card className="animate-fade-in">
+            <CardContent className="pt-6">
               <div className="space-y-3">
                 {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day, index) => (
-                  <div key={index} className="border border-border rounded-md overflow-hidden">
-                    <div className="bg-muted/30 p-3 font-medium">{day}</div>
+                  <div key={index} className="border rounded-md overflow-hidden">
+                    <div className="bg-gray-50 p-3 font-medium">{day}</div>
                     <div className="p-4">
                       {events.slice(index, index + 1).map(event => (
-                        <div key={event.id} className="flex items-center justify-between p-3 border border-border rounded-md bg-card/50">
+                        <div key={event.id} className="flex items-center justify-between p-3 border rounded-md">
                           <div className="flex items-center">
                             <div className={`w-2 h-10 rounded-full ${
                               event.category === "fire" 
@@ -370,9 +362,9 @@ const Schedule = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="day">
-          <Card className="animate-fade-in elegant-card overflow-hidden">
-            <CardContent className="py-6 p-5">
+        <TabsContent value="day" className="m-0">
+          <Card className="animate-fade-in">
+            <CardContent className="py-6">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-semibold">November 15, 2023</h3>
                 <p className="text-muted-foreground">Wednesday</p>
@@ -382,7 +374,7 @@ const Schedule = () => {
                 {events.slice(0, 2).map(event => (
                   <div 
                     key={event.id} 
-                    className="relative border border-border rounded-lg p-4 flex items-start gap-4"
+                    className="relative border rounded-lg p-4 flex items-start gap-4"
                   >
                     <div className="text-center min-w-24">
                       <div className="text-sm font-medium">{event.time.split(" - ")[0]}</div>
@@ -449,7 +441,7 @@ const Schedule = () => {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+      </div>
     </DashboardLayout>
   );
 };

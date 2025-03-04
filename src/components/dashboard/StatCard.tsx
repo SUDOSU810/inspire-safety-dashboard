@@ -1,7 +1,7 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { GlassCard } from "@/components/ui/glass-card";
+import { Card } from "@/components/ui/card";
 
 const statCardVariants = cva(
   "flex flex-col p-6 transition-all duration-300",
@@ -51,13 +51,8 @@ const StatCard = ({
   ...props
 }: StatCardProps) => {
   return (
-    <GlassCard
-      className={cn("hover:shadow-lg hover:-translate-y-1", className)}
-      variant={variant === "default" ? "default" : 
-              variant === "success" ? "success" : 
-              variant === "info" ? "info" : 
-              variant === "danger" ? "warning" : "premium"}
-      highlight
+    <Card
+      className={cn("hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm transition-all", className)}
       {...props}
     >
       <div className={cn(statCardVariants({ variant, size, className }))}>
@@ -91,7 +86,7 @@ const StatCard = ({
         
         {footer && <div className="mt-4">{footer}</div>}
       </div>
-    </GlassCard>
+    </Card>
   );
 };
 

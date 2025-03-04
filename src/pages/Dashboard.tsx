@@ -6,7 +6,6 @@ import ActivityChart from "@/components/dashboard/ActivityChart";
 import UpcomingTrainings from "@/components/dashboard/UpcomingTrainings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
@@ -71,7 +70,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
         <div className="col-span-2">
-          <GlassCard className="h-full">
+          <Card className="h-full backdrop-blur-sm shadow-md hover:shadow-lg transition-all">
             <CardHeader className="border-b border-secondary/20 bg-white/50 rounded-t-xl">
               <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
                 <Award size={18} className="text-primary" />
@@ -81,10 +80,10 @@ const Dashboard = () => {
             <CardContent className="p-0">
               <ActivityChart />
             </CardContent>
-          </GlassCard>
+          </Card>
         </div>
         
-        <GlassCard variant="success" className="h-full">
+        <Card className="h-full border-l-4 border-l-success-green backdrop-blur-sm shadow-md hover:shadow-lg transition-all">
           <CardHeader className="border-b border-secondary/20 bg-white/50 rounded-t-xl">
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck size={18} className="text-success-green" />
@@ -155,12 +154,12 @@ const Dashboard = () => {
               </Button>
             </div>
           </CardContent>
-        </GlassCard>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="col-span-2">
-          <GlassCard className="h-full">
+          <Card className="h-full backdrop-blur-sm shadow-md hover:shadow-lg transition-all">
             <CardHeader className="border-b border-secondary/20 bg-white/50 rounded-t-xl">
               <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
                 <Calendar size={18} className="text-primary" />
@@ -170,10 +169,10 @@ const Dashboard = () => {
             <CardContent className="p-0">
               <UpcomingTrainings />
             </CardContent>
-          </GlassCard>
+          </Card>
         </div>
         
-        <GlassCard variant="info" className="h-full">
+        <Card className="h-full border-l-4 border-l-chart-blue backdrop-blur-sm shadow-md hover:shadow-lg transition-all">
           <CardHeader className="border-b border-secondary/20 bg-white/50 rounded-t-xl">
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <File size={18} className="text-chart-blue" />
@@ -216,7 +215,7 @@ const Dashboard = () => {
               </div>
             </div>
           </CardContent>
-        </GlassCard>
+        </Card>
       </div>
     </DashboardLayout>
   );

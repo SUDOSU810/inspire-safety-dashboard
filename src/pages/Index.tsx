@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Flame, Lock, Mail, Shield } from "lucide-react";
-import { GlassCard } from "@/components/ui/glass-card";
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -63,7 +62,7 @@ const Index = () => {
           </p>
         </div>
 
-        <GlassCard variant="premium" className="animate-scale-in">
+        <Card className="backdrop-blur-sm border border-secondary/20 shadow-lg animate-scale-in">
           <CardHeader className="space-y-1 border-b border-secondary/20">
             <CardTitle className="text-xl text-black flex items-center gap-2">
               <Shield size={18} className="text-success-green" />
@@ -141,7 +140,7 @@ const Index = () => {
               </a>
             </p>
           </CardFooter>
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

@@ -10,7 +10,9 @@ import {
   FileDown, 
   Filter, 
   PieChart, 
-  TrendingUp 
+  TrendingUp,
+  Download,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,7 +28,9 @@ import {
   Pie,
   Cell,
   LineChart,
-  Line
+  Line,
+  Area,
+  AreaChart
 } from "recharts";
 
 const barData = [
@@ -64,9 +68,9 @@ const regionData = [
 const Reports = () => {
   return (
     <DashboardLayout>
-      <div className="mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold font-montserrat text-white tracking-tight">Analytics & Reports</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-8 animate-slide-in">
+        <h1 className="text-4xl font-bold font-montserrat text-gray-800 tracking-tight mb-2">Analytics & Reports</h1>
+        <p className="text-gray-600 text-lg">
           View performance metrics and training analytics
         </p>
       </div>
@@ -74,45 +78,53 @@ const Reports = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div className="w-full md:w-auto">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="regional">Regional</TabsTrigger>
+            <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:grid-cols-3 p-1 rounded-xl bg-gray-100 border-success-green/10">
+              <TabsTrigger value="overview" className="rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-success-green data-[state=active]:shadow-sm">Overview</TabsTrigger>
+              <TabsTrigger value="performance" className="rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-success-green data-[state=active]:shadow-sm">Performance</TabsTrigger>
+              <TabsTrigger value="regional" className="rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-success-green data-[state=active]:shadow-sm">Regional</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-5 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <Card className="elegant-card overflow-hidden md:col-span-2">
-                  <CardHeader className="border-b border-white/5 bg-card/80">
-                    <CardTitle className="text-lg font-semibold text-white">Training Categories</CardTitle>
-                    <CardDescription>Monthly training sessions by category</CardDescription>
+                <Card className="overflow-hidden border-success-green/10 rounded-xl shadow-sm md:col-span-2 bg-white">
+                  <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-gray-800">Training Categories</CardTitle>
+                        <CardDescription className="text-gray-600">Monthly training sessions by category</CardDescription>
+                      </div>
+                      <Button variant="outline" size="sm" className="border-success-green/20 text-success-green">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Chart
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-5 pt-6">
                     <ResponsiveContainer width="100%" height={300}>
-                      <ReBarChart
+                      <AreaChart
                         data={barData}
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                        <XAxis dataKey="name" stroke="#666" />
+                        <YAxis stroke="#666" />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                          contentStyle={{ backgroundColor: 'white', borderColor: '#e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                          labelStyle={{ color: '#333', fontWeight: 'bold' }}
                         />
                         <Legend />
-                        <Bar dataKey="fire" name="Fire Safety" fill="#2EBD6B" />
-                        <Bar dataKey="road" name="Road Safety" fill="#1A9953" />
-                        <Bar dataKey="industrial" name="Industrial Safety" fill="#4FCB87" />
-                      </ReBarChart>
+                        <Area type="monotone" dataKey="fire" name="Fire Safety" stroke="#2EBD6B" fill="#2EBD6B" fillOpacity={0.4} activeDot={{ r: 6 }} />
+                        <Area type="monotone" dataKey="road" name="Road Safety" stroke="#1A9953" fill="#1A9953" fillOpacity={0.3} activeDot={{ r: 6 }} />
+                        <Area type="monotone" dataKey="industrial" name="Industrial Safety" stroke="#4FCB87" fill="#4FCB87" fillOpacity={0.2} activeDot={{ r: 6 }} />
+                      </AreaChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
                 
-                <Card className="elegant-card overflow-hidden">
-                  <CardHeader className="border-b border-white/5 bg-card/80">
-                    <CardTitle className="text-lg font-semibold text-white">Distribution</CardTitle>
-                    <CardDescription>Training categories distribution</CardDescription>
+                <Card className="overflow-hidden border-success-green/10 rounded-xl shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                    <CardTitle className="text-lg font-semibold text-gray-800">Category Distribution</CardTitle>
+                    <CardDescription className="text-gray-600">Training types percentages</CardDescription>
                   </CardHeader>
                   <CardContent className="p-5 pt-6 flex items-center justify-center">
                     <ResponsiveContainer width="100%" height={250}>
@@ -131,8 +143,8 @@ const Reports = () => {
                           ))}
                         </Pie>
                         <Tooltip 
-                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                          contentStyle={{ backgroundColor: 'white', borderColor: '#e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                          labelStyle={{ color: '#333', fontWeight: 'bold' }}
                         />
                       </RePieChart>
                     </ResponsiveContainer>
@@ -141,10 +153,10 @@ const Reports = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Card className="elegant-card overflow-hidden">
-                  <CardHeader className="border-b border-white/5 bg-card/80">
-                    <CardTitle className="text-lg font-semibold text-white">Weekly Trainings</CardTitle>
-                    <CardDescription>Training sessions and participants</CardDescription>
+                <Card className="overflow-hidden border-success-green/10 rounded-xl shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                    <CardTitle className="text-lg font-semibold text-gray-800">Weekly Trends</CardTitle>
+                    <CardDescription className="text-gray-600">Training sessions and participants</CardDescription>
                   </CardHeader>
                   <CardContent className="p-5 pt-6">
                     <ResponsiveContainer width="100%" height={250}>
@@ -152,49 +164,50 @@ const Reports = () => {
                         data={lineData}
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                        <XAxis dataKey="name" stroke="#666" />
+                        <YAxis stroke="#666" />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: 'rgba(17, 20, 26, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}
-                          labelStyle={{ color: 'rgba(255,255,255,0.9)' }}
+                          contentStyle={{ backgroundColor: 'white', borderColor: '#e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                          labelStyle={{ color: '#333', fontWeight: 'bold' }}
                         />
                         <Legend />
-                        <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#4FCB87" strokeWidth={2} />
-                        <Line type="monotone" dataKey="participants" name="Participants" stroke="#2EBD6B" strokeWidth={2} />
+                        <Line type="monotone" dataKey="trainings" name="Training Sessions" stroke="#4FCB87" strokeWidth={2} activeDot={{ r: 6 }} />
+                        <Line type="monotone" dataKey="participants" name="Participants" stroke="#2EBD6B" strokeWidth={2} activeDot={{ r: 6 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
                 
-                <Card className="elegant-card overflow-hidden">
-                  <CardHeader className="border-b border-white/5 bg-card/80">
-                    <CardTitle className="text-lg font-semibold text-white">Regional Performance</CardTitle>
-                    <CardDescription>Training completion rates by region</CardDescription>
+                <Card className="overflow-hidden border-success-green/10 rounded-xl shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                    <CardTitle className="text-lg font-semibold text-gray-800">Regional Performance</CardTitle>
+                    <CardDescription className="text-gray-600">Training completion rates by region</CardDescription>
                   </CardHeader>
-                  <CardContent className="p-5 pt-6 space-y-5">
+                  <CardContent className="p-6 pt-6 space-y-5">
                     {regionData.map((region) => (
                       <div key={region.name}>
                         <div className="flex items-center justify-between mb-2">
                           <div>
-                            <span className="text-sm font-medium text-white/90">{region.name} Region</span>
+                            <span className="text-sm font-medium text-gray-800">{region.name} Region</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-sm font-medium text-white/90">{region.completion}%</span>
+                            <span className="text-sm font-medium text-gray-800">{region.completion}%</span>
                             <TrendingUp size={14} className="text-success-green" />
                           </div>
                         </div>
-                        <Progress 
-                          value={region.completion} 
-                          className="h-2 bg-muted" 
-                          indicatorClassName={
-                            region.completion > 80 
-                              ? "bg-gradient-to-r from-success-green to-light-green/70"
-                              : region.completion > 70
-                                ? "bg-gradient-to-r from-light-green to-light-green/70"
-                                : "bg-gradient-to-r from-dark-green to-dark-green/70"
-                          } 
-                        />
+                        <div className="relative h-2 overflow-hidden rounded-full bg-gray-100">
+                          <div 
+                            className={`absolute top-0 left-0 h-full rounded-full ${
+                              region.completion > 80 
+                                ? "bg-gradient-to-r from-success-green to-light-green"
+                                : region.completion > 70
+                                  ? "bg-gradient-to-r from-light-green to-vibrant-green"
+                                  : "bg-gradient-to-r from-dark-green to-dark-green/70"
+                            }`} 
+                            style={{ width: `${region.completion}%` }}
+                          />
+                        </div>
                       </div>
                     ))}
                   </CardContent>
@@ -203,17 +216,17 @@ const Reports = () => {
             </TabsContent>
             
             <TabsContent value="performance" className="mt-5">
-              <Card className="elegant-card animate-fade-in overflow-hidden">
-                <CardHeader className="border-b border-white/5 bg-card/80">
-                  <CardTitle className="text-lg font-semibold text-white">Performance Metrics</CardTitle>
-                  <CardDescription>Interactive performance dashboard coming soon</CardDescription>
+              <Card className="animate-fade-in overflow-hidden border-success-green/10 rounded-xl shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                  <CardTitle className="text-lg font-semibold text-gray-800">Performance Metrics</CardTitle>
+                  <CardDescription className="text-gray-600">Interactive performance dashboard coming soon</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-                  <div className="w-16 h-16 rounded-full gradient-green flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-success-green/20 flex items-center justify-center mb-4">
                     <BarChart className="h-8 w-8 text-success-green" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Performance Dashboard</h3>
-                  <p className="text-muted-foreground max-w-md mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Performance Dashboard</h3>
+                  <p className="text-gray-600 max-w-md mb-6">
                     Detailed performance metrics and KPIs for training programs and trainers will be available here soon.
                   </p>
                   <Button>Check Back Soon</Button>
@@ -222,17 +235,17 @@ const Reports = () => {
             </TabsContent>
             
             <TabsContent value="regional" className="mt-5">
-              <Card className="elegant-card animate-fade-in overflow-hidden">
-                <CardHeader className="border-b border-white/5 bg-card/80">
-                  <CardTitle className="text-lg font-semibold text-white">Regional Analysis</CardTitle>
-                  <CardDescription>Region-wise training breakdown coming soon</CardDescription>
+              <Card className="animate-fade-in overflow-hidden border-success-green/10 rounded-xl shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-success-green/10 to-transparent border-b border-success-green/10 p-5">
+                  <CardTitle className="text-lg font-semibold text-gray-800">Regional Analysis</CardTitle>
+                  <CardDescription className="text-gray-600">Region-wise training breakdown coming soon</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 flex flex-col items-center justify-center h-[400px] text-center">
-                  <div className="w-16 h-16 rounded-full gradient-dark flex items-center justify-center mb-4">
-                    <PieChart className="h-8 w-8 text-dark-green" />
+                  <div className="w-16 h-16 rounded-full bg-success-green/20 flex items-center justify-center mb-4">
+                    <PieChart className="h-8 w-8 text-success-green" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Regional Dashboard</h3>
-                  <p className="text-muted-foreground max-w-md mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Regional Dashboard</h3>
+                  <p className="text-gray-600 max-w-md mb-6">
                     Detailed region-wise analysis of training programs, participation, and effectiveness will be available here soon.
                   </p>
                   <Button>Check Back Soon</Button>
@@ -244,7 +257,7 @@ const Reports = () => {
 
         <div className="flex items-center gap-2">
           <Select defaultValue="thisMonth">
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] border-success-green/10 rounded-lg">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -255,15 +268,82 @@ const Reports = () => {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="border-success-green/10 rounded-lg">
             <Filter className="h-4 w-4" />
           </Button>
           
-          <Button variant="outline">
+          <Button variant="outline" className="border-success-green/10 rounded-lg">
             <FileDown className="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
+      </div>
+
+      {/* Analytics Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <Card className="border-success-green/10 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success-green/10 rounded-bl-full" />
+            <div className="relative">
+              <h3 className="text-gray-500 font-medium text-sm mb-1">Total Trainings</h3>
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold text-gray-800">248</span>
+                <Badge className="ml-2 bg-success-green/10 text-success-green border-0">+12%</Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <CalendarIcon className="h-3 w-3 mr-1" /> Last 30 days
+              </p>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="border-success-green/10 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-light-green/10 rounded-bl-full" />
+            <div className="relative">
+              <h3 className="text-gray-500 font-medium text-sm mb-1">Participants</h3>
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold text-gray-800">3,782</span>
+                <Badge className="ml-2 bg-success-green/10 text-success-green border-0">+8%</Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <CalendarIcon className="h-3 w-3 mr-1" /> Last 30 days
+              </p>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="border-success-green/10 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-vibrant-green/10 rounded-bl-full" />
+            <div className="relative">
+              <h3 className="text-gray-500 font-medium text-sm mb-1">Completion Rate</h3>
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold text-gray-800">87.5%</span>
+                <Badge className="ml-2 bg-success-green/10 text-success-green border-0">+5%</Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <CalendarIcon className="h-3 w-3 mr-1" /> Last 30 days
+              </p>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="border-success-green/10 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-dark-green/10 rounded-bl-full" />
+            <div className="relative">
+              <h3 className="text-gray-500 font-medium text-sm mb-1">Satisfaction Rate</h3>
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold text-gray-800">92.3%</span>
+                <Badge className="ml-2 bg-success-green/10 text-success-green border-0">+2%</Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <CalendarIcon className="h-3 w-3 mr-1" /> Last 30 days
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
     </DashboardLayout>
   );

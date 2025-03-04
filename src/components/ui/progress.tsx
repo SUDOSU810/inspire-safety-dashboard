@@ -6,12 +6,13 @@ import { cn } from "@/lib/utils"
 
 interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   indicatorClassName?: string;
+  textClassName?: string;
 }
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   ProgressProps
->(({ className, value, indicatorClassName, ...props }, ref) => (
+>(({ className, value, indicatorClassName, textClassName, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
@@ -27,6 +28,11 @@ const Progress = React.forwardRef<
       )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
+    {value !== undefined && (
+      <div className={cn("absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-black", textClassName)}>
+        {value}%
+      </div>
+    )}
   </ProgressPrimitive.Root>
 ))
 Progress.displayName = ProgressPrimitive.Root.displayName

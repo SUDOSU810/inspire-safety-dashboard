@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -26,16 +26,27 @@ const weeklyData = [
 
 type TimeRange = "weekly" | "monthly";
 
+// More vibrant colors
+const COLORS = {
+  fire: "#FF7F00",
+  road: "#3B82F6", 
+  industrial: "#2EBD6B"
+};
+
+const getBarColor = (dataKey: string) => {
+  return COLORS[dataKey as keyof typeof COLORS] || "#000000";
+};
+
 const ActivityChart = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("monthly");
   
   const data = timeRange === "monthly" ? monthlyData : weeklyData;
   
   return (
-    <Card className="animate-fade-in">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="animate-fade-in shadow-md card-gradient-light">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-secondary/40 bg-white/80">
         <div>
-          <CardTitle className="text-lg font-semibold">Activity by Safety Domain</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Activity by Safety Domain</CardTitle>
           <CardDescription>Number of training sessions conducted</CardDescription>
         </div>
         <div className="flex gap-2">
@@ -55,45 +66,65 @@ const ActivityChart = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="bg-white/60">
+        <div className="h-[300px] pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaeaea" />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#666" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#666" }} />
               <Tooltip 
                 contentStyle={{ 
                   borderRadius: "8px", 
                   boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                  border: "none"
+                  border: "none",
+                  backgroundColor: "white"
                 }} 
               />
-              <Legend wrapperStyle={{ paddingTop: 20 }} />
+              <Legend 
+                wrapperStyle={{ paddingTop: 20 }}
+                formatter={(value) => {
+                  const colorMap = {
+                    fire: "Fire Safety",
+                    road: "Road Safety", 
+                    industrial: "Industrial Safety"
+                  };
+                  return <span style={{ color: "#555" }}>{colorMap[value as keyof typeof colorMap]}</span>;
+                }}
+              />
               <Bar 
                 dataKey="fire" 
-                name="Fire Safety" 
-                fill="#FF7F00" 
+                name="fire" 
                 radius={[4, 4, 0, 0]} 
                 barSize={30} 
                 animationDuration={1000}
-              />
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-fire-${index}`} fill={COLORS.fire} />
+                ))}
+              </Bar>
               <Bar 
                 dataKey="road" 
-                name="Road Safety" 
-                fill="#0A3D62" 
+                name="road" 
                 radius={[4, 4, 0, 0]} 
                 barSize={30} 
                 animationDuration={1500}
-              />
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-road-${index}`} fill={COLORS.road} />
+                ))}
+              </Bar>
               <Bar 
                 dataKey="industrial" 
-                name="Industrial Safety" 
-                fill="#27AE60" 
+                name="industrial" 
                 radius={[4, 4, 0, 0]} 
                 barSize={30} 
                 animationDuration={2000}
-              />
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-industrial-${index}`} fill={COLORS.industrial} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -7,10 +7,10 @@ const statCardVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-l-4 border-l-primary",
-        success: "border-l-4 border-l-success-green",
-        danger: "border-l-4 border-l-alert-red",
-        info: "border-l-4 border-l-deep-blue",
+        default: "border-l-4 border-l-primary bg-gradient-to-br from-white to-pale-green/30",
+        success: "border-l-4 border-l-success-green bg-gradient-to-br from-white to-mint-green/20",
+        danger: "border-l-4 border-l-alert-red bg-gradient-to-br from-white to-pink-50",
+        info: "border-l-4 border-l-chart-blue bg-gradient-to-br from-white to-blue-50",
       },
       size: {
         default: "p-6",
@@ -50,28 +50,34 @@ const StatCard = ({
 }: StatCardProps) => {
   return (
     <div
-      className={cn(statCardVariants({ variant, size, className }))}
+      className={cn(statCardVariants({ variant, size, className }), "shadow-md hover:shadow-lg")}
       {...props}
     >
       <div className="flex items-start justify-between mb-2">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <h3 className="text-2xl font-semibold mt-1">{value}</h3>
+          <h3 className="text-2xl font-semibold mt-1 text-foreground">{value}</h3>
         </div>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
+        {icon && (
+          <div className="text-primary bg-primary/10 p-2 rounded-full">
+            {icon}
+          </div>
+        )}
       </div>
       
       {trend && (
         <div className="flex items-center mt-1">
           <span
             className={cn(
-              "text-xs font-medium flex items-center",
-              trend.isUpward ? "text-success-green" : "text-alert-red"
+              "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
+              trend.isUpward 
+                ? "text-success-green bg-success-green/10" 
+                : "text-destructive bg-destructive/10"
             )}
           >
             {trend.isUpward ? "↑" : "↓"} {trend.value}%
+            <span className="text-xs text-muted-foreground">vs last month</span>
           </span>
-          <span className="text-xs text-muted-foreground ml-1">vs last month</span>
         </div>
       )}
       

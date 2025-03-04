@@ -63,18 +63,25 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Black, white, and green color palette
+				// Enhanced green color palette
 				"success-green": "#2EBD6B", // Main green
 				"light-green": "#4FCB87", // Lighter shade
+				"vibrant-green": "#1ED760", // Spotify-like green
+				"forest-green": "#228B22", // Deeper green
+				"emerald-green": "#50C878", // Bright emerald
+				"mint-green": "#98FB98", // Very light mint
+				"sage-green": "#BCB88A", // Muted sage
 				"dark-green": "#1A9953", // Darker shade
 				"pale-green": "#F2FCE2", // Very light green for subtle backgrounds
-				"black": "#000000",
-				"off-black": "#1A1A1A",
-				"dark-gray": "#222222",
-				"medium-gray": "#333333",
-				"light-gray": "#555555",
+				"lime-green": "#32CD32", // Bright lime
+				"olive-green": "#808000", // Muted olive
+				// Enhanced general colors
 				"white": "#FFFFFF",
 				"off-white": "#F8F8F8",
+				"chart-blue": "#3B82F6",
+				"chart-orange": "#F59E0B",
+				"chart-purple": "#8B5CF6",
+				"chart-pink": "#EC4899",
 			},
 			fontFamily: {
 				montserrat: ["Montserrat", "sans-serif"],
@@ -139,6 +146,14 @@ export default {
 					'50%': { 
 						boxShadow: '0 0 20px rgba(46, 189, 107, 0.8)' 
 					}
+				},
+				'pulse-green': {
+					'0%, 100%': { 
+						backgroundColor: 'rgba(46, 189, 107, 0.6)'
+					},
+					'50%': { 
+						backgroundColor: 'rgba(46, 189, 107, 0.8)'
+					}
 				}
 			},
 			animation: {
@@ -148,6 +163,7 @@ export default {
 				'slide-in': 'slide-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'glow': 'glow 3s ease-in-out infinite',
+				'pulse-green': 'pulse-green 2s ease-in-out infinite',
 			}
 		}
 	},

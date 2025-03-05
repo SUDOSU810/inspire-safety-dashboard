@@ -1,5 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -57,11 +56,19 @@
   }
 
   body {
-    @apply bg-background text-foreground font-open-sans;
+    @apply bg-gradient-to-br from-white to-tea-green/30 text-foreground font-open-sans min-h-screen;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2, h3 {
     @apply font-montserrat font-semibold;
+  }
+
+  h4, h5, h6 {
+    @apply font-raleway font-semibold;
+  }
+
+  .font-poppins {
+    @apply font-poppins;
   }
 }
 
@@ -95,15 +102,15 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-secondary rounded-full;
+  @apply bg-secondary/50 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/40 rounded-full;
+  @apply bg-cambridge-blue/60 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/60;
+  @apply bg-oxford-blue/60;
 }
 
 /* File upload zone */
@@ -237,4 +244,70 @@
 
 .btn-elegant:hover:before {
   @apply translate-x-[110%];
+}
+
+/* Enhanced Glassmorphism styles */
+.glass-panel {
+  @apply bg-white/40 backdrop-blur-xl border border-white/30 shadow-lg rounded-xl;
+}
+
+.glass-panel-darker {
+  @apply bg-white/30 backdrop-blur-xl border border-white/20 shadow-lg rounded-xl;
+}
+
+.glass-card {
+  @apply bg-white/60 backdrop-blur-md border border-cambridge-blue/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
+}
+
+.glass-card-accent {
+  @apply bg-white/60 backdrop-blur-md border-l-4 border-l-cambridge-blue border border-cambridge-blue/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
+}
+
+.glass-card-success {
+  @apply bg-white/60 backdrop-blur-md border-l-4 border-l-success-green border border-success-green/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
+}
+
+.glass-button {
+  @apply bg-white/60 backdrop-blur-md border border-cambridge-blue/30 text-oxford-blue shadow-sm hover:bg-white/80 hover:border-cambridge-blue/50 hover:shadow-md transition-all;
+}
+
+/* Document hover card styles */
+.document-hover-card {
+  @apply p-4 bg-white/70 backdrop-blur-md border border-cambridge-blue/30 rounded-lg shadow-md transition-all;
+}
+
+/* Creative text styles */
+.text-gradient-primary {
+  @apply bg-gradient-to-r from-oxford-blue to-cambridge-blue bg-clip-text text-transparent;
+}
+
+.text-gradient-success {
+  @apply bg-gradient-to-r from-success-green to-light-green bg-clip-text text-transparent;
+}
+
+/* Enhanced button styles */
+.btn-creative {
+  @apply relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-cambridge-blue to-tea-green text-oxford-blue font-medium rounded-lg px-6 py-3 shadow-md hover:shadow-lg;
+}
+
+.btn-creative::before {
+  @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full transition-transform duration-700;
+}
+
+.btn-creative:hover::before {
+  @apply translate-x-[110%];
+}
+
+/* Enhance page headers */
+.page-title {
+  @apply text-3xl font-bold font-montserrat text-gradient-primary tracking-tight;
+}
+
+.page-subtitle {
+  @apply text-charcoal font-raleway;
+}
+
+/* Avatar enhancements */
+.avatar-gradient {
+  @apply bg-gradient-to-br from-oxford-blue to-cambridge-blue text-white;
 }

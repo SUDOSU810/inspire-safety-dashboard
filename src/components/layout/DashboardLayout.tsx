@@ -43,13 +43,13 @@ const NavItem = ({ to, icon: Icon, label, active }: NavItemProps) => {
       className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 overflow-hidden ${
         active 
           ? "bg-gradient-to-r from-success-green/90 to-light-green/60 text-white shadow-md" 
-          : "text-gray-600 hover:bg-gradient-to-r hover:from-success-green/20 hover:to-light-green/10"
+          : "text-white/80 hover:bg-gradient-to-r hover:from-success-green/20 hover:to-light-green/10 hover:text-white"
       }`}
     >
-      <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${active ? "bg-white/20" : "bg-success-green/10"}`}>
-        <Icon size={18} className={active ? "text-white" : "text-success-green"} />
+      <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${active ? "bg-white/20" : "bg-cambridge-blue/20"}`}>
+        <Icon size={18} className={active ? "text-white" : "text-cambridge-blue"} />
       </div>
-      <span className={`font-medium ${active ? "text-white" : ""}`}>{label}</span>
+      <span className={`font-poppins ${active ? "text-white font-medium" : "font-normal"}`}>{label}</span>
       {active && (
         <ChevronRight className="absolute right-3 h-4 w-4 text-white/70" />
       )}
@@ -101,10 +101,10 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex bg-off-white">
-      {/* Unique Sidebar Design */}
+    <div className="min-h-screen flex bg-gradient-to-br from-white to-tea-green/20">
+      {/* Enhanced Sidebar Design */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out border-r border-success-green/10 bg-oxford-blue/95 shadow-lg ${
+        className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out border-r border-cambridge-blue/30 bg-gradient-to-b from-oxford-blue via-oxford-blue/95 to-charcoal/90 shadow-lg ${
           sidebarOpen ? "w-72" : "w-20"
         } flex flex-col`}
       >
@@ -113,10 +113,10 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
             to="/dashboard" 
             className={`flex items-center gap-3 ${!sidebarOpen && "opacity-0 w-0 overflow-hidden"}`}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success-green to-vibrant-green flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-vibrant-green to-success-green flex items-center justify-center shadow-md">
               <Flame className="h-6 w-6 text-white" />
             </div>
-            <h1 className="font-montserrat font-bold tracking-tight text-white text-lg">
+            <h1 className="font-poppins font-bold tracking-tight text-white text-lg">
               Inspire Safety
             </h1>
           </Link>
@@ -130,9 +130,9 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
           </Button>
         </div>
 
-        <div className="flex-1 py-6 px-3 overflow-y-auto bg-gradient-to-b from-oxford-blue/95 to-charcoal/90">
+        <div className="flex-1 py-6 px-3 overflow-y-auto">
           <div className={`mb-6 px-2 ${!sidebarOpen && "opacity-0 h-0 overflow-hidden"}`}>
-            <h2 className="text-xs uppercase font-semibold text-tea-green tracking-wider pl-2 mb-4">Main Menu</h2>
+            <h2 className="text-xs uppercase font-raleway font-semibold text-tea-green tracking-wider pl-2 mb-4">Main Menu</h2>
           </div>
           <nav className="space-y-2.5 px-2">
             {navItems.map((item) => (
@@ -151,14 +151,14 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
           <div className="flex items-center gap-3">
             <Avatar className="border border-tea-green/20 h-10 w-10 shadow-sm">
               <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white">
+              <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white font-poppins">
                 AD
               </AvatarFallback>
             </Avatar>
             {sidebarOpen && (
               <div>
-                <p className="text-white text-sm font-medium">Admin User</p>
-                <p className="text-tea-green/70 text-xs">admin@inspiresafety.org</p>
+                <p className="text-white text-sm font-medium font-poppins">Admin User</p>
+                <p className="text-tea-green/70 text-xs font-open-sans">admin@inspiresafety.org</p>
               </div>
             )}
           </div>
@@ -171,40 +171,40 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
           sidebarOpen ? "ml-72" : "ml-20"
         }`}
       >
-        {/* Top navbar */}
-        <header className="h-16 border-b border-success-green/10 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 sticky top-0 z-30">
+        {/* Enhanced top navbar */}
+        <header className="h-16 border-b border-cambridge-blue/30 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="w-full max-w-md">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-charcoal/70" />
               <Input
                 type="search"
                 placeholder="Search..."
-                className="w-full pl-10 bg-gray-50 border-success-green/10 focus:border-success-green/30 rounded-xl"
+                className="w-full pl-10 bg-white/80 border-cambridge-blue/30 focus:border-success-green/50 rounded-xl font-raleway"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="relative rounded-xl border-success-green/10 text-gray-600 hover:text-success-green">
+                <Button variant="outline" size="icon" className="relative rounded-xl border-cambridge-blue/30 text-charcoal hover:text-success-green hover:border-success-green/50">
                   <Bell size={20} />
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success-green text-white text-xs flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success-green text-white text-xs flex items-center justify-center shadow-sm font-poppins">
                     3
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[300px] border-success-green/10">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-success-green/10" />
+              <DropdownMenuContent align="end" className="w-[300px] border-cambridge-blue/30 glass-panel">
+                <DropdownMenuLabel className="font-poppins">Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-cambridge-blue/20" />
                 <div className="max-h-[300px] overflow-y-auto">
                   {[1, 2, 3].map((i) => (
                     <DropdownMenuItem key={i} className="flex flex-col items-start py-3 focus:bg-success-green/5 cursor-pointer">
-                      <div className="font-medium">New training scheduled</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-medium font-poppins">New training scheduled</div>
+                      <div className="text-xs font-raleway text-charcoal">
                         Fire Safety Training in Chennai Region
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-cambridge-blue mt-1 font-open-sans">
                         10 minutes ago
                       </div>
                     </DropdownMenuItem>
@@ -215,23 +215,23 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="relative flex items-center gap-2 border-success-green/10 rounded-xl" size="sm">
-                  <Avatar className="h-8 w-8 border border-success-green/10">
+                <Button variant="outline" className="relative flex items-center gap-2 border-cambridge-blue/30 hover:border-success-green/50 rounded-xl bg-white/80" size="sm">
+                  <Avatar className="h-8 w-8 border border-cambridge-blue/30">
                     <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white">
+                    <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white font-poppins">
                       AD
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-sm text-gray-700">Admin</span>
+                  <span className="font-medium text-sm text-oxford-blue font-poppins">Admin</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="border-success-green/10">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-success-green/10" />
-                <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-success-green/5 cursor-pointer">Profile</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-success-green/5 cursor-pointer">Settings</DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-success-green/10" />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-50 cursor-pointer">
+              <DropdownMenuContent align="end" className="border-cambridge-blue/30 glass-panel">
+                <DropdownMenuLabel className="font-poppins">My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-cambridge-blue/20" />
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-success-green/5 cursor-pointer font-raleway">Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-success-green/5 cursor-pointer font-raleway">Settings</DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-cambridge-blue/20" />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-50 cursor-pointer font-raleway">
                   <LogOut className="w-4 h-4 mr-2" />
                   <span>Logout</span>
                 </DropdownMenuItem>

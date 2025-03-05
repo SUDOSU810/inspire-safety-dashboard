@@ -94,6 +94,8 @@ export default {
 			fontFamily: {
 				montserrat: ["Montserrat", "sans-serif"],
 				"open-sans": ["Open Sans", "sans-serif"],
+				poppins: ["Poppins", "sans-serif"],
+				raleway: ["Raleway", "sans-serif"],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

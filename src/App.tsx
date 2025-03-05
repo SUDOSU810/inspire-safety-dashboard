@@ -15,14 +15,33 @@ import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Configure our query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
+        <Sonner 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(130, 163, 161, 0.3)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+              fontFamily: "Raleway, sans-serif"
+            },
+          }}
+        />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />

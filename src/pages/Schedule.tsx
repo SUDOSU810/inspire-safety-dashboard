@@ -1,23 +1,8 @@
 
-import { useState, useEffect } from "react";
-import { 
-  Calendar as CalendarIcon, 
-  ChevronLeft, 
-  ChevronRight, 
-  Grid, 
-  List, 
-  Plus, 
-  Users, 
-  MapPin, 
-  Clock, 
-  Info,
-  AlertTriangle,
-  Search
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { format, addDays, startOfWeek, getDay, isSameDay } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -27,767 +12,489 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Clock,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
-// Sample trainers data
+// Sample data for trainers and training types
 const trainers = [
-  { id: 1, name: "Raj Kumar", specialty: "Fire Safety", initials: "RK", avatar: "/placeholder.svg" },
-  { id: 2, name: "Priya Singh", specialty: "Road Safety", initials: "PS", avatar: "/placeholder.svg" },
-  { id: 3, name: "Vikram Mehta", specialty: "Industrial Safety", initials: "VM", avatar: "/placeholder.svg" },
-  { id: 4, name: "Sunita Patel", specialty: "Fire Safety", initials: "SP", avatar: "/placeholder.svg" },
+  { id: 1, name: "John Doe", specialty: "Fire Safety" },
+  { id: 2, name: "Jane Smith", specialty: "Road Safety" },
+  { id: 3, name: "Bob Johnson", specialty: "Industrial Safety" },
+  { id: 4, name: "Alice Williams", specialty: "First Aid" },
 ];
 
-// Sample training events with useState to allow adding new events
+const trainingTypes = [
+  { id: 1, name: "Fire Safety", category: "fire" },
+  { id: 2, name: "Road Safety", category: "road" },
+  { id: 3, name: "Industrial Safety", category: "industrial" },
+  { id: 4, name: "First Aid", category: "first-aid" },
+  { id: 5, name: "Hazardous Materials", category: "hazmat" },
+];
+
+// Initial training events
 const initialEvents = [
   {
     id: 1,
-    title: "Fire Safety Workshop",
-    date: "2023-11-15",
-    time: "10:00 - 12:00",
-    location: "Chennai Central Office",
-    trainer: trainers[0],
+    title: "Fire Safety Training",
+    date: new Date(2024, 0, 15),
+    time: "10:00 AM",
+    type: "Fire Safety",
     category: "fire",
-    participants: 15,
-    description: "Basic fire safety training covering prevention, equipment usage, and evacuation procedures."
+    trainer: 1,
+    location: "Building A, Room 101",
   },
   {
     id: 2,
-    title: "Road Safety Awareness",
-    date: "2023-11-15",
-    time: "14:00 - 16:00",
-    location: "Mumbai Transportation Hub",
-    trainer: trainers[1],
+    title: "Road Safety Seminar",
+    date: new Date(2024, 0, 17),
+    time: "2:00 PM",
+    type: "Road Safety",
     category: "road",
-    participants: 22,
-    description: "Training on traffic rules, defensive driving techniques, and accident prevention."
+    trainer: 2,
+    location: "Conference Center",
   },
   {
     id: 3,
-    title: "Industrial Machinery Training",
-    date: "2023-11-16",
-    time: "09:00 - 12:00",
-    location: "Bangalore Manufacturing Plant",
-    trainer: trainers[2],
+    title: "Industrial Safety Workshop",
+    date: new Date(2024, 0, 20),
+    time: "9:00 AM",
+    type: "Industrial Safety",
     category: "industrial",
-    participants: 18,
-    description: "Safety procedures for operating heavy machinery and equipment in industrial settings."
-  },
-  {
-    id: 4,
-    title: "Emergency Response Drill",
-    date: "2023-11-17",
-    time: "13:00 - 15:00",
-    location: "Chennai Central Office",
-    trainer: trainers[3],
-    category: "fire",
-    participants: 30,
-    description: "Practical drill on emergency response protocols and team coordination during incidents."
-  },
-  {
-    id: 5,
-    title: "Traffic Management Workshop",
-    date: "2023-11-18",
-    time: "10:00 - 12:00",
-    location: "Delhi Transport Authority",
-    trainer: trainers[1],
-    category: "road",
-    participants: 25,
-    description: "Advanced techniques for managing traffic flow and optimizing transportation safety."
+    trainer: 3,
+    location: "Factory Floor, Building C",
   },
 ];
 
-// Helper function to generate calendar days
-const generateCalendarDays = (year, month, events) => {
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  
-  const days = [];
-  
-  // Add empty days for start of month
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push({ day: "", date: null });
-  }
-  
-  // Add days of the month
-  for (let i = 1; i <= daysInMonth; i++) {
-    const date = new Date(year, month, i);
-    const dateString = date.toISOString().split("T")[0];
-    const dayEvents = events.filter(event => event.date === dateString);
-    
-    days.push({
-      day: i,
-      date: dateString,
-      events: dayEvents,
-    });
-  }
-  
-  return days;
-};
-
-const getCategoryColor = (category) => {
-  switch (category) {
-    case "fire":
-      return "bg-[#FF7F00]/10 text-[#FF7F00] border-[#FF7F00]/30";
-    case "road":
-      return "bg-oxford-blue/10 text-oxford-blue border-oxford-blue/30";
-    case "industrial":
-      return "bg-cambridge-blue/10 text-cambridge-blue border-cambridge-blue/30";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-};
-
 const Schedule = () => {
-  const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedView, setSelectedView] = useState("month");
-  const [createEventOpen, setCreateEventOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState(initialEvents);
-  const [newTraining, setNewTraining] = useState({
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const { toast } = useToast();
+
+  // State for new event form
+  const [newEvent, setNewEvent] = useState({
     title: "",
-    date: "",
+    date: new Date(),
     time: "",
-    location: "",
+    type: "",
     category: "",
-    trainerId: "",
-    description: ""
+    trainer: 0,
+    location: "",
   });
-  
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
-  
-  // Update calendarDays when events change
-  const [calendarDays, setCalendarDays] = useState([]);
-  
-  useEffect(() => {
-    setCalendarDays(generateCalendarDays(year, month, events));
-  }, [events, year, month]);
-  
-  const handlePreviousMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-  
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+
+  // Generate days for calendar view
+  const generateCalendarDays = () => {
+    const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+    let days = [];
+    
+    for (let i = 0; i < 35; i++) {
+      const date = addDays(startDate, i);
+      days.push(date);
+    }
+    
+    return days;
   };
 
-  const handleInputChange = (field, value) => {
-    setNewTraining(prev => ({ ...prev, [field]: value }));
+  const calendarDays = generateCalendarDays();
+  
+  // Get events for a specific date
+  const getEventsForDate = (date: Date) => {
+    return events.filter(event => isSameDay(event.date, date));
   };
 
-  const handleScheduleTraining = () => {
-    if (!newTraining.title || !newTraining.date || !newTraining.category || !newTraining.trainerId) {
+  // Handle adding a new event
+  const handleAddEvent = () => {
+    if (!newEvent.title || !newEvent.time || !newEvent.type || !newEvent.trainer) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields to schedule the training",
-        variant: "destructive"
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
       });
       return;
     }
 
-    // Find the selected trainer
-    const selectedTrainer = trainers.find(trainer => trainer.id.toString() === newTraining.trainerId);
-    
-    // Create new training event
-    const newEvent = {
+    // Find the category based on the selected training type
+    const trainingType = trainingTypes.find(t => t.name === newEvent.type);
+    const category = trainingType ? trainingType.category : "";
+
+    const eventToAdd = {
       id: events.length + 1,
-      title: newTraining.title,
-      date: newTraining.date,
-      time: newTraining.time || "09:00 - 11:00",
-      location: newTraining.location || "Main Office",
-      trainer: selectedTrainer,
-      category: newTraining.category,
-      participants: 0,
-      description: newTraining.description || "No description provided."
+      title: newEvent.title,
+      date: selectedDate || new Date(),
+      time: newEvent.time,
+      type: newEvent.type,
+      category: category,
+      trainer: Number(newEvent.trainer),
+      location: newEvent.location,
     };
-    
-    // Add to events array
-    setEvents(prevEvents => [...prevEvents, newEvent]);
-    
-    toast({
-      title: "Training Scheduled",
-      description: `${newTraining.title} has been scheduled for ${newTraining.date}`,
-      variant: "success"
-    });
 
-    setCreateEventOpen(false);
-    setNewTraining({
+    setEvents([...events, eventToAdd]);
+    
+    setIsAddEventOpen(false);
+    
+    // Reset form
+    setNewEvent({
       title: "",
-      date: "",
+      date: new Date(),
       time: "",
-      location: "",
+      type: "",
       category: "",
-      trainerId: "",
-      description: ""
+      trainer: 0,
+      location: "",
+    });
+
+    toast({
+      title: "Success",
+      description: "Training session has been scheduled",
+      variant: "success",
     });
   };
 
-  const handleReschedule = (event) => {
-    toast({
-      title: "Reschedule Requested",
-      description: `You requested to reschedule ${event.title}. This feature will be available soon.`,
-    });
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewEvent(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleViewDetails = (event) => {
+  // Handle select changes
+  const handleSelectChange = (name: string, value: string) => {
+    setNewEvent(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Navigate to previous month
+  const navigatePrevious = () => {
+    const prevMonth = new Date(currentDate);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    setCurrentDate(prevMonth);
+  };
+
+  // Navigate to next month
+  const navigateNext = () => {
+    const nextMonth = new Date(currentDate);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    setCurrentDate(nextMonth);
+  };
+  
+  // Get trainer name by ID
+  const getTrainerName = (id: number) => {
+    const trainer = trainers.find(t => t.id === id);
+    return trainer ? trainer.name : "Unknown";
+  };
+
+  // Handle refresh button click
+  const handleRefreshCalendar = () => {
+    // Refresh the calendar (in a real app, this might fetch new data)
     toast({
-      title: "Viewing Details",
-      description: `Showing details for ${event.title}. Full detail page coming soon.`,
+      title: "Calendar Refreshed",
+      description: "Latest training schedule has been loaded",
+      variant: "default",
     });
   };
 
   return (
     <DashboardLayout>
-      <div className="mb-8 animate-fade-in">
-        <div className="flex justify-between items-center">
+      <div className="animate-fade-in">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold font-montserrat text-gradient-primary">Training Schedule</h1>
+            <h1 className="page-title">Training Schedule</h1>
             <p className="text-charcoal font-raleway mt-1">
-              Manage and organize training sessions
+              Manage and view upcoming training sessions
             </p>
           </div>
-          <div className="flex gap-3">
-            <div className="relative w-56">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search trainings..."
-                className="pl-10 border-accent/20 focus:border-accent"
-              />
-            </div>
-            <Button variant="premium" onClick={handleRefresh} className="glass-button">
-              <RefreshCw size={16} className="mr-2" />
+          <div className="space-x-2">
+            <Button variant="outline" className="glass-button" onClick={handleRefreshCalendar}>
+              <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
+            <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
+              <DialogTrigger asChild>
+                <Button variant="creative">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Training
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-panel">
+                <DialogHeader>
+                  <DialogTitle>Schedule New Training</DialogTitle>
+                  <DialogDescription>
+                    Create a new training session for your team.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Title
+                    </Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={newEvent.title}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="col-span-3 justify-start text-left font-normal glass-button"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 glass-panel">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="time" className="text-right">
+                      Time
+                    </Label>
+                    <div className="col-span-3 flex items-center">
+                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="time"
+                        name="time"
+                        value={newEvent.time}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 10:00 AM"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Type</Label>
+                    <Select
+                      onValueChange={(value) => handleSelectChange("type", value)}
+                    >
+                      <SelectTrigger className="col-span-3 glass-button">
+                        <SelectValue placeholder="Select training type" />
+                      </SelectTrigger>
+                      <SelectContent className="glass-panel">
+                        {trainingTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.name}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Trainer</Label>
+                    <Select
+                      onValueChange={(value) => handleSelectChange("trainer", value)}
+                    >
+                      <SelectTrigger className="col-span-3 glass-button">
+                        <SelectValue placeholder="Select a trainer" />
+                      </SelectTrigger>
+                      <SelectContent className="glass-panel">
+                        {trainers.map((trainer) => (
+                          <SelectItem key={trainer.id} value={trainer.id.toString()}>
+                            {trainer.name} - {trainer.specialty}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="location" className="text-right">
+                      Location
+                    </Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={newEvent.location}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddEventOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddEvent}>Save Training</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={handlePreviousMonth}
-            className="border-cambridge-blue/30 text-oxford-blue hover:bg-tea-green/20"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <h2 className="text-xl font-semibold text-oxford-blue">
-            {monthName} {year}
-          </h2>
-          
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={handleNextMonth}
-            className="border-cambridge-blue/30 text-oxford-blue hover:bg-tea-green/20"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Tabs 
-            defaultValue="month" 
-            value={selectedView} 
-            onValueChange={setSelectedView} 
-            className="w-full md:w-auto"
-          >
-            <TabsList className="grid grid-cols-3 w-full md:w-auto bg-tea-green/20">
-              <TabsTrigger 
-                value="month" 
-                className="data-[state=active]:bg-oxford-blue data-[state=active]:text-white"
-              >
-                Month
-              </TabsTrigger>
-              <TabsTrigger 
-                value="week" 
-                className="data-[state=active]:bg-oxford-blue data-[state=active]:text-white"
-              >
-                Week
-              </TabsTrigger>
-              <TabsTrigger 
-                value="day" 
-                className="data-[state=active]:bg-oxford-blue data-[state=active]:text-white"
-              >
-                Day
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <Dialog open={createEventOpen} onOpenChange={setCreateEventOpen}>
-            <DialogTrigger asChild>
-              <Button className="md:ml-auto bg-gradient-to-r from-vibrant-green to-success-green text-white hover:opacity-90">
-                <Plus className="mr-2 h-4 w-4" /> Schedule Training
+        <Card className="glass-panel mb-6">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <Button variant="ghost" size="icon" onClick={navigatePrevious}>
+                <ChevronLeft className="h-5 w-5" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] glass-panel border-cambridge-blue/20">
-              <DialogHeader>
-                <DialogTitle>Schedule New Training</DialogTitle>
-                <DialogDescription>
-                  Add details for the new training session. Click save when you're done.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
-                  <Input 
-                    id="title" 
-                    placeholder="Enter training title" 
-                    value={newTraining.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="border-accent/20 focus:border-accent"
-                  />
+              <h2 className="text-xl font-semibold font-montserrat">
+                {format(currentDate, 'MMMM yyyy')}
+              </h2>
+              <Button variant="ghost" size="icon" onClick={navigateNext}>
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <div key={day} className="text-center py-2 text-sm font-semibold">
+                  {day}
                 </div>
+              ))}
+            </div>
+            
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map((day, index) => {
+                const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+                const dayEvents = getEventsForDate(day);
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="date">Date <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="date" 
-                      type="date" 
-                      value={newTraining.date}
-                      onChange={(e) => handleInputChange('date', e.target.value)}
-                      className="border-accent/20 focus:border-accent"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="time">Time</Label>
-                    <Input 
-                      id="time" 
-                      type="time" 
-                      value={newTraining.time}
-                      onChange={(e) => handleInputChange('time', e.target.value)}
-                      className="border-accent/20 focus:border-accent"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input 
-                    id="location" 
-                    placeholder="Enter location" 
-                    value={newTraining.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
-                  <Select 
-                    value={newTraining.category}
-                    onValueChange={(value) => handleInputChange('category', value)}
-                  >
-                    <SelectTrigger id="category" className="border-accent/20 focus:border-accent">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent className="glass-panel">
-                      <SelectItem value="fire">Fire Safety</SelectItem>
-                      <SelectItem value="road">Road Safety</SelectItem>
-                      <SelectItem value="industrial">Industrial Safety</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="trainer">Assign Trainer <span className="text-red-500">*</span></Label>
-                  <Select 
-                    value={newTraining.trainerId}
-                    onValueChange={(value) => handleInputChange('trainerId', value)}
-                  >
-                    <SelectTrigger id="trainer" className="flex justify-between border-accent/20 focus:border-accent">
-                      <SelectValue placeholder="Select trainer" />
-                    </SelectTrigger>
-                    <SelectContent className="glass-panel">
-                      {trainers.map(trainer => (
-                        <SelectItem key={trainer.id} value={trainer.id.toString()} className="flex items-center">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6 mr-2">
-                              <AvatarImage src={trainer.avatar} />
-                              <AvatarFallback className="bg-oxford-blue text-white text-xs">
-                                {trainer.initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            {trainer.name} - {trainer.specialty}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea 
-                    id="description" 
-                    placeholder="Add details about the training" 
-                    value={newTraining.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="border-accent/20 focus:border-accent"
-                  />
-                </div>
-                
-                {(!newTraining.title || !newTraining.date || !newTraining.category || !newTraining.trainerId) && (
-                  <div className="flex items-center gap-2 text-amber-500 text-sm">
-                    <AlertTriangle size={16} />
-                    <span>Fields marked with * are required</span>
-                  </div>
-                )}
-              </div>
-              
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateEventOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  variant="premium"
-                  onClick={handleScheduleTraining}
-                >
-                  Save Training
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      
-      <Tabs value={selectedView} onValueChange={setSelectedView} defaultValue="month" className="w-full">
-        <div className="hidden">
-          <TabsList>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="day">Day</TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <TabsContent value="month">
-          <Card className="animate-fade-in glass-card overflow-hidden shadow-lg">
-            <CardContent className="p-0">
-              {/* Calendar Header - Days of Week */}
-              <div className="grid grid-cols-7 border-b border-olivine/20">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+                return (
                   <div 
-                    key={index} 
-                    className="p-3 text-center font-medium text-sm border-r last:border-r-0 border-olivine/20 text-oxford-blue bg-gradient-to-b from-white to-tea-green/20"
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 min-h-[600px]">
-                {calendarDays.map((day, index) => (
-                  <div 
-                    key={index} 
-                    className={`border-r border-b last:border-r-0 p-1 relative border-olivine/20 ${
-                      !day.day ? "bg-tea-green/5" : ""
+                    key={index}
+                    className={`calendar-day ${
+                      isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+                    } ${
+                      isSameDay(day, new Date()) ? 'calendar-day-active' : ''
                     }`}
+                    onClick={() => {
+                      setSelectedDate(day);
+                      if (dayEvents.length === 0) {
+                        setIsAddEventOpen(true);
+                      }
+                    }}
                   >
-                    {day.day && (
-                      <>
-                        <div className="p-1 font-medium text-sm text-oxford-blue">{day.day}</div>
-                        <div className="space-y-1 mt-1">
-                          {day.events?.map(event => (
-                            <TooltipProvider key={event.id}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <HoverCard>
-                                    <HoverCardTrigger asChild>
-                                      <div 
-                                        className={`calendar-event ${event.category} rounded-sm px-2 py-1 text-xs cursor-pointer hover:shadow-md transition-all`}
-                                      >
-                                        {event.title}
-                                      </div>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent 
-                                      className="w-80 p-0 border-cambridge-blue/30 glass-panel"
-                                      side="right"
-                                    >
-                                      <div className="p-4 border-b border-olivine/20 bg-gradient-to-r from-white to-tea-green/20">
-                                        <div className="flex justify-between items-start">
-                                          <div>
-                                            <Badge 
-                                              className={getCategoryColor(event.category)}
-                                            >
-                                              {event.category === "fire" 
-                                                ? "Fire Safety" 
-                                                : event.category === "road" 
-                                                  ? "Road Safety" 
-                                                  : "Industrial Safety"}
-                                            </Badge>
-                                            <h3 className="font-medium text-oxford-blue mt-2">{event.title}</h3>
-                                          </div>
-                                          <Button variant="outline" size="icon" className="h-7 w-7">
-                                            <Info className="h-3.5 w-3.5" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                      <div className="p-4 space-y-3">
-                                        <div className="flex items-start gap-2">
-                                          <Clock className="h-4 w-4 text-charcoal mt-0.5" />
-                                          <div>
-                                            <p className="text-sm font-medium text-oxford-blue">{event.time}</p>
-                                            <p className="text-xs text-charcoal">{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                          <MapPin className="h-4 w-4 text-charcoal mt-0.5" />
-                                          <p className="text-sm text-charcoal">{event.location}</p>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                          <Users className="h-4 w-4 text-charcoal mt-0.5" />
-                                          <p className="text-sm text-charcoal">{event.participants} participants</p>
-                                        </div>
-                                        <div className="pt-2 border-t border-olivine/20">
-                                          <div className="flex items-center gap-2">
-                                            <Avatar className="h-6 w-6">
-                                              <AvatarImage src={event.trainer.avatar} />
-                                              <AvatarFallback className="bg-cambridge-blue text-white text-xs">
-                                                {event.trainer.initials}
-                                              </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                              <p className="text-sm font-medium text-oxford-blue">{event.trainer.name}</p>
-                                              <p className="text-xs text-charcoal">{event.trainer.specialty}</p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="pt-2 text-xs text-charcoal">
-                                          <p>{event.description}</p>
-                                        </div>
-                                      </div>
-                                      <div className="p-3 bg-gradient-to-r from-tea-green/10 to-white border-t border-olivine/20 flex justify-end gap-2">
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="h-8 text-xs border-cambridge-blue/30 text-cambridge-blue"
-                                          onClick={() => handleReschedule(event)}
-                                        >
-                                          Reschedule
-                                        </Button>
-                                        <Button 
-                                          size="sm" 
-                                          className="h-8 text-xs bg-gradient-to-r from-oxford-blue to-charcoal text-white"
-                                          onClick={() => handleViewDetails(event)}
-                                        >
-                                          View Details
-                                        </Button>
-                                      </div>
-                                    </HoverCardContent>
-                                  </HoverCard>
-                                </TooltipTrigger>
-                                <TooltipContent className="glass-panel border-cambridge-blue/20">
-                                  <p className="text-xs">{event.title} - {event.time}</p>
-                                  <p className="text-xs">Trainer: {event.trainer.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="week">
-          <Card className="animate-fade-in border-cambridge-blue/30 overflow-hidden">
-            <CardContent className="pt-6 p-5">
-              <div className="space-y-3">
-                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day, index) => (
-                  <div key={index} className="border border-olivine/20 rounded-md overflow-hidden">
-                    <div className="bg-tea-green/20 p-3 font-medium text-oxford-blue">{day}</div>
-                    <div className="p-4">
-                      {events.slice(index, index + 1).map(event => (
-                        <div key={event.id} className="flex items-center justify-between p-3 border border-olivine/20 rounded-md bg-white/50 hover:bg-tea-green/10 transition-colors backdrop-blur-sm">
-                          <div className="flex items-center">
-                            <div className={`w-2 h-10 rounded-full ${
-                              event.category === "fire" 
-                                ? "bg-[#FF7F00]" 
-                                : event.category === "road" 
-                                  ? "bg-oxford-blue" 
-                                  : "bg-cambridge-blue"
-                            } mr-3`}></div>
-                            <div>
-                              <h3 className="font-medium text-oxford-blue">{event.title}</h3>
-                              <p className="text-sm text-charcoal">
-                                {event.time} • {event.location}
-                              </p>
-                            </div>
+                    <div className="relative h-full w-full">
+                      <span className="absolute top-0 right-0">{day.getDate()}</span>
+                      <div className="mt-6 space-y-1">
+                        {dayEvents.slice(0, 2).map((event, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`calendar-event ${event.category}`}
+                            title={`${event.title} - ${event.time}`}
+                          >
+                            {event.title.length > 10 ? event.title.substring(0, 10) + '...' : event.title}
                           </div>
-                          <div className="flex items-center">
-                            <Badge className={getCategoryColor(event.category)}>
-                              {event.category === "fire" 
-                                ? "Fire Safety" 
-                                : event.category === "road" 
-                                  ? "Road Safety" 
-                                  : "Industrial Safety"}
-                            </Badge>
-                            <Avatar className="ml-4 h-8 w-8">
-                              <AvatarImage src={event.trainer.avatar} />
-                              <AvatarFallback className="bg-cambridge-blue text-white">
-                                {event.trainer.initials}
-                              </AvatarFallback>
-                            </Avatar>
+                        ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-xs text-center font-medium text-muted-foreground">
+                            +{dayEvents.length - 2} more
                           </div>
-                        </div>
-                      ))}
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
         
-        <TabsContent value="day">
-          <Card className="animate-fade-in border-cambridge-blue/30 overflow-hidden">
-            <CardContent className="py-6 p-5">
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold text-oxford-blue">November 15, 2023</h3>
-                <p className="text-charcoal">Wednesday</p>
-              </div>
-              
-              <div className="space-y-6">
-                {events.slice(0, 2).map(event => (
-                  <div 
-                    key={event.id} 
-                    className="relative border border-olivine/20 rounded-lg p-4 flex items-start gap-4 bg-white/80 backdrop-blur-sm"
-                  >
-                    <div className="text-center min-w-24">
-                      <div className="text-sm font-medium text-oxford-blue">{event.time.split(" - ")[0]}</div>
-                      <div className="text-xs text-charcoal mt-1">to</div>
-                      <div className="text-sm font-medium text-oxford-blue">{event.time.split(" - ")[1]}</div>
+        {selectedDate && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold font-montserrat">
+                Events for {format(selectedDate, 'MMMM d, yyyy')}
+              </h2>
+              <Button 
+                variant="outline" 
+                className="glass-button" 
+                onClick={() => {
+                  setIsAddEventOpen(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Event
+              </Button>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {getEventsForDate(selectedDate).map((event) => (
+                <Card key={event.id} className={`glass-card-${event.category === 'fire' ? 'accent' : 'success'}`}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-lg font-raleway">{event.title}</h3>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium bg-${event.category === 'fire' ? 'chart-orange' : event.category === 'road' ? 'oxford-blue' : 'cambridge-blue'}/20 text-${event.category === 'fire' ? 'chart-orange' : event.category === 'road' ? 'oxford-blue' : 'cambridge-blue'}`}>
+                        {event.type}
+                      </div>
                     </div>
-                    
-                    <div className={`w-1 h-full absolute left-28 top-0 rounded-full ${
-                      event.category === "fire" 
-                        ? "bg-[#FF7F00]" 
-                        : event.category === "road" 
-                          ? "bg-oxford-blue" 
-                          : "bg-cambridge-blue"
-                    }`}></div>
-                    
-                    <div className="ml-3 flex-1">
-                      <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Clock className="mr-1 h-4 w-4" />
+                        {event.time}
+                      </div>
+                      <div>|</div>
+                      <div>{event.location}</div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-accent/20">
+                      <div className="flex items-center">
+                        <Avatar className="h-8 w-8 mr-2">
+                          <AvatarImage src={`https://i.pravatar.cc/150?u=${event.trainer}`} />
+                          <AvatarFallback className="avatar-gradient">
+                            {getTrainerName(event.trainer).charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
                         <div>
-                          <Badge className={getCategoryColor(event.category)}>
-                            {event.category === "fire" 
-                              ? "Fire Safety" 
-                              : event.category === "road" 
-                                ? "Road Safety" 
-                                : "Industrial Safety"}
-                          </Badge>
-                          <h3 className="text-lg font-semibold mt-2 text-oxford-blue">{event.title}</h3>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-cambridge-blue/30 text-cambridge-blue"
-                            onClick={() => handleReschedule(event)}
-                          >
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="border-charcoal/30 text-charcoal"
-                            onClick={() => {
-                              toast({
-                                title: "Training Canceled",
-                                description: `${event.title} has been canceled.`,
-                                variant: "destructive"
-                              });
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 text-charcoal">
-                        <div className="flex items-center gap-1 text-sm mb-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{event.location}</span>
-                        </div>
-                        
-                        <div className="flex justify-between mt-4">
-                          <div className="flex items-center">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={event.trainer.avatar} />
-                              <AvatarFallback className="bg-cambridge-blue text-white">
-                                {event.trainer.initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="ml-2">
-                              <p className="text-sm font-medium text-oxford-blue">{event.trainer.name}</p>
-                              <p className="text-xs text-charcoal">{event.trainer.specialty} Trainer</p>
-                            </div>
-                          </div>
-                          
-                          <div className="text-sm">
-                            <span className="font-medium text-oxford-blue">{event.participants}</span> participants
+                          <div className="text-sm font-medium">{getTrainerName(event.trainer)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {trainers.find(t => t.id === event.trainer)?.specialty}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {getEventsForDate(selectedDate).length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground glass-panel">
+                  <p>No training sessions scheduled for this date.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4 glass-button" 
+                    onClick={() => setIsAddEventOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Schedule Training
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </DashboardLayout>
-  );
-};
-
-// Required for RefreshCw component used above
-const RefreshCw = ({ size = 24, className = "", ...props }) => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`lucide lucide-refresh-cw ${className}`}
-      {...props}
-    >
-      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-      <path d="M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-      <path d="M3 21v-5h5" />
-    </svg>
   );
 };
 

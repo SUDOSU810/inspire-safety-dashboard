@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -122,7 +121,7 @@ const Documents = () => {
     toast({
       title: "Upload Successful",
       description: `${fileName} has been uploaded successfully!`,
-      variant: "success",
+      variant: "default",
     });
   };
 

@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface FileUploadProps {
   onFilesSelected?: (files: File[]) => void;
+  onUploadSuccess?: (fileName: string) => void;
   maxFiles?: number;
   acceptedFileTypes?: string;
 }

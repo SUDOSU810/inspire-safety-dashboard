@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -6,47 +7,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 180 30% 98%; /* Lighter background */
     --foreground: 216 33% 10%; /* Oxford Blue text */
 
-    --card: 0 0% 98%;
+    --card: 0 0% 100%;
     --card-foreground: 216 33% 10%;
 
-    --popover: 0 0% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 216 33% 10%;
 
-    --primary: 216 80% 10%; /* Oxford Blue */
+    --primary: 216 75% 20%; /* Lighter Oxford Blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 106 31% 72%; /* Tea Green */
+    --secondary: 106 31% 85%; /* Lighter Tea Green */
     --secondary-foreground: 216 33% 10%;
 
-    --muted: 155 15% 90%;
+    --muted: 155 15% 95%;
     --muted-foreground: 215 14% 34%; /* Charcoal */
 
-    --accent: 170 24% 57%; /* Cambridge Blue */
+    --accent: 170 24% 70%; /* Lighter Cambridge Blue */
     --accent-foreground: 216 33% 10%;
 
-    --destructive: 0 62% 50%;
+    --destructive: 0 62% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 145 63% 46%;
+    --success: 145 63% 55%;
     --success-foreground: 0 0% 100%;
 
-    --border: 106 31% 72%; /* Tea Green */
-    --input: 106 31% 72%;
-    --ring: 170 24% 57%; /* Cambridge Blue */
+    --border: 106 31% 80%; /* Lighter Tea Green */
+    --input: 106 31% 80%;
+    --ring: 170 24% 70%; /* Lighter Cambridge Blue */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Slightly larger radius for softer feel */
 
-    --sidebar-background: 216 80% 10%; /* Oxford Blue */
+    --sidebar-background: 216 75% 15%; /* Lighter Oxford Blue */
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 170 24% 57%; /* Cambridge Blue */
+    --sidebar-primary: 170 24% 70%; /* Lighter Cambridge Blue */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 14% 34%; /* Charcoal */
+    --sidebar-accent: 215 14% 45%; /* Lighter Charcoal */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 215 14% 34%; /* Charcoal */
-    --sidebar-ring: 170 24% 57%; /* Cambridge Blue */
+    --sidebar-border: 215 14% 45%; /* Lighter Charcoal */
+    --sidebar-ring: 170 24% 70%; /* Lighter Cambridge Blue */
   }
 }
 
@@ -56,7 +57,7 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-white to-tea-green/30 text-foreground font-open-sans min-h-screen;
+    @apply bg-gradient-to-br from-white via-tea-green/10 to-cambridge-blue/10 text-foreground font-open-sans min-h-screen;
   }
 
   h1, h2, h3 {
@@ -67,7 +68,7 @@
     @apply font-raleway font-semibold;
   }
 
-  /* Remove the circular dependency - we don't need this class since font-poppins is already defined in tailwind config */
+  /* Remove the circular dependency */
   /* .font-poppins {
     @apply font-poppins;
   } */

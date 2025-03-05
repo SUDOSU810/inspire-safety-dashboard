@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -11,7 +11,8 @@ import {
   MapPin, 
   Clock, 
   Info,
-  AlertTriangle
+  AlertTriangle,
+  Search
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -48,8 +49,8 @@ const trainers = [
   { id: 4, name: "Sunita Patel", specialty: "Fire Safety", initials: "SP", avatar: "/placeholder.svg" },
 ];
 
-// Sample training events
-const events = [
+// Sample training events with useState to allow adding new events
+const initialEvents = [
   {
     id: 1,
     title: "Fire Safety Workshop",
@@ -108,7 +109,7 @@ const events = [
 ];
 
 // Helper function to generate calendar days
-const generateCalendarDays = (year: number, month: number) => {
+const generateCalendarDays = (year, month, events) => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   
@@ -135,7 +136,7 @@ const generateCalendarDays = (year: number, month: number) => {
   return days;
 };
 
-const getCategoryColor = (category: string) => {
+const getCategoryColor = (category) => {
   switch (category) {
     case "fire":
       return "bg-[#FF7F00]/10 text-[#FF7F00] border-[#FF7F00]/30";
@@ -153,7 +154,7 @@ const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedView, setSelectedView] = useState("month");
   const [createEventOpen, setCreateEventOpen] = useState(false);
-  const [selectedTrainer, setSelectedTrainer] = useState("");
+  const [events, setEvents] = useState(initialEvents);
   const [newTraining, setNewTraining] = useState({
     title: "",
     date: "",
@@ -168,7 +169,12 @@ const Schedule = () => {
   const month = currentDate.getMonth();
   const monthName = currentDate.toLocaleString("default", { month: "long" });
   
-  const calendarDays = generateCalendarDays(year, month);
+  // Update calendarDays when events change
+  const [calendarDays, setCalendarDays] = useState([]);
+  
+  useEffect(() => {
+    setCalendarDays(generateCalendarDays(year, month, events));
+  }, [events, year, month]);
   
   const handlePreviousMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -178,7 +184,7 @@ const Schedule = () => {
     setCurrentDate(new Date(year, month + 1, 1));
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field, value) => {
     setNewTraining(prev => ({ ...prev, [field]: value }));
   };
 
@@ -192,12 +198,29 @@ const Schedule = () => {
       return;
     }
 
-    // In a real app, this would save to a database
-    console.log("Scheduling new training:", newTraining);
+    // Find the selected trainer
+    const selectedTrainer = trainers.find(trainer => trainer.id.toString() === newTraining.trainerId);
+    
+    // Create new training event
+    const newEvent = {
+      id: events.length + 1,
+      title: newTraining.title,
+      date: newTraining.date,
+      time: newTraining.time || "09:00 - 11:00",
+      location: newTraining.location || "Main Office",
+      trainer: selectedTrainer,
+      category: newTraining.category,
+      participants: 0,
+      description: newTraining.description || "No description provided."
+    };
+    
+    // Add to events array
+    setEvents(prevEvents => [...prevEvents, newEvent]);
     
     toast({
       title: "Training Scheduled",
       description: `${newTraining.title} has been scheduled for ${newTraining.date}`,
+      variant: "success"
     });
 
     setCreateEventOpen(false);
@@ -212,14 +235,14 @@ const Schedule = () => {
     });
   };
 
-  const handleReschedule = (event: any) => {
+  const handleReschedule = (event) => {
     toast({
       title: "Reschedule Requested",
       description: `You requested to reschedule ${event.title}. This feature will be available soon.`,
     });
   };
 
-  const handleViewDetails = (event: any) => {
+  const handleViewDetails = (event) => {
     toast({
       title: "Viewing Details",
       description: `Showing details for ${event.title}. Full detail page coming soon.`,
@@ -229,10 +252,28 @@ const Schedule = () => {
   return (
     <DashboardLayout>
       <div className="mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold font-montserrat text-oxford-blue">Training Schedule</h1>
-        <p className="text-charcoal">
-          Manage and organize training sessions
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold font-montserrat text-gradient-primary">Training Schedule</h1>
+            <p className="text-charcoal font-raleway mt-1">
+              Manage and organize training sessions
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <div className="relative w-56">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search trainings..."
+                className="pl-10 border-accent/20 focus:border-accent"
+              />
+            </div>
+            <Button variant="premium" onClick={handleRefresh} className="glass-button">
+              <RefreshCw size={16} className="mr-2" />
+              Refresh
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -291,11 +332,11 @@ const Schedule = () => {
           
           <Dialog open={createEventOpen} onOpenChange={setCreateEventOpen}>
             <DialogTrigger asChild>
-              <Button className="md:ml-auto bg-gradient-to-r from-oxford-blue to-charcoal text-white hover:opacity-90">
+              <Button className="md:ml-auto bg-gradient-to-r from-vibrant-green to-success-green text-white hover:opacity-90">
                 <Plus className="mr-2 h-4 w-4" /> Schedule Training
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] bg-white/90 backdrop-blur-md border-cambridge-blue/20">
+            <DialogContent className="sm:max-w-[550px] glass-panel border-cambridge-blue/20">
               <DialogHeader>
                 <DialogTitle>Schedule New Training</DialogTitle>
                 <DialogDescription>
@@ -311,6 +352,7 @@ const Schedule = () => {
                     placeholder="Enter training title" 
                     value={newTraining.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 
@@ -322,6 +364,7 @@ const Schedule = () => {
                       type="date" 
                       value={newTraining.date}
                       onChange={(e) => handleInputChange('date', e.target.value)}
+                      className="border-accent/20 focus:border-accent"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -331,6 +374,7 @@ const Schedule = () => {
                       type="time" 
                       value={newTraining.time}
                       onChange={(e) => handleInputChange('time', e.target.value)}
+                      className="border-accent/20 focus:border-accent"
                     />
                   </div>
                 </div>
@@ -342,6 +386,7 @@ const Schedule = () => {
                     placeholder="Enter location" 
                     value={newTraining.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 
@@ -351,10 +396,10 @@ const Schedule = () => {
                     value={newTraining.category}
                     onValueChange={(value) => handleInputChange('category', value)}
                   >
-                    <SelectTrigger id="category">
+                    <SelectTrigger id="category" className="border-accent/20 focus:border-accent">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="glass-panel">
                       <SelectItem value="fire">Fire Safety</SelectItem>
                       <SelectItem value="road">Road Safety</SelectItem>
                       <SelectItem value="industrial">Industrial Safety</SelectItem>
@@ -368,10 +413,10 @@ const Schedule = () => {
                     value={newTraining.trainerId}
                     onValueChange={(value) => handleInputChange('trainerId', value)}
                   >
-                    <SelectTrigger id="trainer" className="flex justify-between">
+                    <SelectTrigger id="trainer" className="flex justify-between border-accent/20 focus:border-accent">
                       <SelectValue placeholder="Select trainer" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="glass-panel">
                       {trainers.map(trainer => (
                         <SelectItem key={trainer.id} value={trainer.id.toString()} className="flex items-center">
                           <div className="flex items-center gap-2">
@@ -396,6 +441,7 @@ const Schedule = () => {
                     placeholder="Add details about the training" 
                     value={newTraining.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
+                    className="border-accent/20 focus:border-accent"
                   />
                 </div>
                 
@@ -413,7 +459,7 @@ const Schedule = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-success-green to-cambridge-blue text-white"
+                  variant="premium"
                   onClick={handleScheduleTraining}
                 >
                   Save Training
@@ -434,14 +480,14 @@ const Schedule = () => {
         </div>
         
         <TabsContent value="month">
-          <Card className="animate-fade-in border-cambridge-blue/30 overflow-hidden shadow-lg">
+          <Card className="animate-fade-in glass-card overflow-hidden shadow-lg">
             <CardContent className="p-0">
               {/* Calendar Header - Days of Week */}
               <div className="grid grid-cols-7 border-b border-olivine/20">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
                   <div 
                     key={index} 
-                    className="p-3 text-center font-medium text-sm border-r last:border-r-0 border-olivine/20 text-oxford-blue bg-tea-green/10"
+                    className="p-3 text-center font-medium text-sm border-r last:border-r-0 border-olivine/20 text-oxford-blue bg-gradient-to-b from-white to-tea-green/20"
                   >
                     {day}
                   </div>
@@ -474,7 +520,7 @@ const Schedule = () => {
                                       </div>
                                     </HoverCardTrigger>
                                     <HoverCardContent 
-                                      className="w-80 p-0 border-cambridge-blue/30 shadow-lg backdrop-blur-md bg-white/80"
+                                      className="w-80 p-0 border-cambridge-blue/30 glass-panel"
                                       side="right"
                                     >
                                       <div className="p-4 border-b border-olivine/20 bg-gradient-to-r from-white to-tea-green/20">
@@ -550,7 +596,7 @@ const Schedule = () => {
                                     </HoverCardContent>
                                   </HoverCard>
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-white/80 backdrop-blur-md border-cambridge-blue/20">
+                                <TooltipContent className="glass-panel border-cambridge-blue/20">
                                   <p className="text-xs">{event.title} - {event.time}</p>
                                   <p className="text-xs">Trainer: {event.trainer.name}</p>
                                 </TooltipContent>
@@ -718,6 +764,30 @@ const Schedule = () => {
         </TabsContent>
       </Tabs>
     </DashboardLayout>
+  );
+};
+
+// Required for RefreshCw component used above
+const RefreshCw = ({ size = 24, className = "", ...props }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`lucide lucide-refresh-cw ${className}`}
+      {...props}
+    >
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
   );
 };
 

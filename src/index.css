@@ -67,9 +67,10 @@
     @apply font-raleway font-semibold;
   }
 
-  .font-poppins {
+  /* Remove the circular dependency - we don't need this class since font-poppins is already defined in tailwind config */
+  /* .font-poppins {
     @apply font-poppins;
-  }
+  } */
 }
 
 .stat-card {

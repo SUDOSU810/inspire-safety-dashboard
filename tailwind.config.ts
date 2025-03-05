@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,6 +63,12 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				// New color palette from image
+				"oxford-blue": "#011936", 
+				"charcoal": "#465362",
+				"cambridge-blue": "#82A3A1",
+				"olivine": "#9FC490",
+				"tea-green": "#C0DFA1",
 				// Enhanced green color palette
 				"success-green": "#2EBD6B", // Main green
 				"light-green": "#4FCB87", // Lighter shade

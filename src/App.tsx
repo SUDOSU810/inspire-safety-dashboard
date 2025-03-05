@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
 import Schedule from "./pages/Schedule";
 import Trainers from "./pages/Trainers";
+import TrainerDetail from "./pages/TrainerDetail";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="/documents" element={<Documents />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/trainers" element={<Trainers />} />
+            <Route path="/trainer/:id" element={<TrainerDetail />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -10,7 +10,8 @@ import {
   Users, 
   MapPin, 
   Clock, 
-  Info
+  Info,
+  AlertTriangle
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 // Sample trainers data
 const trainers = [
@@ -147,10 +149,20 @@ const getCategoryColor = (category: string) => {
 };
 
 const Schedule = () => {
+  const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedView, setSelectedView] = useState("month");
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState("");
+  const [newTraining, setNewTraining] = useState({
+    title: "",
+    date: "",
+    time: "",
+    location: "",
+    category: "",
+    trainerId: "",
+    description: ""
+  });
   
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -164,6 +176,54 @@ const Schedule = () => {
   
   const handleNextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setNewTraining(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleScheduleTraining = () => {
+    if (!newTraining.title || !newTraining.date || !newTraining.category || !newTraining.trainerId) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields to schedule the training",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would save to a database
+    console.log("Scheduling new training:", newTraining);
+    
+    toast({
+      title: "Training Scheduled",
+      description: `${newTraining.title} has been scheduled for ${newTraining.date}`,
+    });
+
+    setCreateEventOpen(false);
+    setNewTraining({
+      title: "",
+      date: "",
+      time: "",
+      location: "",
+      category: "",
+      trainerId: "",
+      description: ""
+    });
+  };
+
+  const handleReschedule = (event: any) => {
+    toast({
+      title: "Reschedule Requested",
+      description: `You requested to reschedule ${event.title}. This feature will be available soon.`,
+    });
+  };
+
+  const handleViewDetails = (event: any) => {
+    toast({
+      title: "Viewing Details",
+      description: `Showing details for ${event.title}. Full detail page coming soon.`,
+    });
   };
 
   return (
@@ -235,7 +295,7 @@ const Schedule = () => {
                 <Plus className="mr-2 h-4 w-4" /> Schedule Training
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px]">
+            <DialogContent className="sm:max-w-[550px] bg-white/90 backdrop-blur-md border-cambridge-blue/20">
               <DialogHeader>
                 <DialogTitle>Schedule New Training</DialogTitle>
                 <DialogDescription>
@@ -245,29 +305,52 @@ const Schedule = () => {
               
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input id="title" placeholder="Enter training title" />
+                  <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
+                  <Input 
+                    id="title" 
+                    placeholder="Enter training title" 
+                    value={newTraining.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                  />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="date">Date</Label>
-                    <Input id="date" type="date" />
+                    <Label htmlFor="date">Date <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="date" 
+                      type="date" 
+                      value={newTraining.date}
+                      onChange={(e) => handleInputChange('date', e.target.value)}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="time">Time</Label>
-                    <Input id="time" type="time" />
+                    <Input 
+                      id="time" 
+                      type="time" 
+                      value={newTraining.time}
+                      onChange={(e) => handleInputChange('time', e.target.value)}
+                    />
                   </div>
                 </div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input id="location" placeholder="Enter location" />
+                  <Input 
+                    id="location" 
+                    placeholder="Enter location" 
+                    value={newTraining.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                  />
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select>
+                  <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
+                  <Select 
+                    value={newTraining.category}
+                    onValueChange={(value) => handleInputChange('category', value)}
+                  >
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -280,8 +363,11 @@ const Schedule = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="trainer">Assign Trainer</Label>
-                  <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
+                  <Label htmlFor="trainer">Assign Trainer <span className="text-red-500">*</span></Label>
+                  <Select 
+                    value={newTraining.trainerId}
+                    onValueChange={(value) => handleInputChange('trainerId', value)}
+                  >
                     <SelectTrigger id="trainer" className="flex justify-between">
                       <SelectValue placeholder="Select trainer" />
                     </SelectTrigger>
@@ -305,15 +391,31 @@ const Schedule = () => {
                 
                 <div className="grid gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" placeholder="Add details about the training" />
+                  <Textarea 
+                    id="description" 
+                    placeholder="Add details about the training" 
+                    value={newTraining.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                  />
                 </div>
+                
+                {(!newTraining.title || !newTraining.date || !newTraining.category || !newTraining.trainerId) && (
+                  <div className="flex items-center gap-2 text-amber-500 text-sm">
+                    <AlertTriangle size={16} />
+                    <span>Fields marked with * are required</span>
+                  </div>
+                )}
               </div>
               
               <DialogFooter>
                 <Button variant="outline" onClick={() => setCreateEventOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-to-r from-cambridge-blue to-olivine text-white">
+                <Button 
+                  type="submit" 
+                  className="bg-gradient-to-r from-success-green to-cambridge-blue text-white"
+                  onClick={handleScheduleTraining}
+                >
                   Save Training
                 </Button>
               </DialogFooter>
@@ -332,7 +434,7 @@ const Schedule = () => {
         </div>
         
         <TabsContent value="month">
-          <Card className="animate-fade-in border-cambridge-blue/30 overflow-hidden">
+          <Card className="animate-fade-in border-cambridge-blue/30 overflow-hidden shadow-lg">
             <CardContent className="p-0">
               {/* Calendar Header - Days of Week */}
               <div className="grid grid-cols-7 border-b border-olivine/20">
@@ -367,16 +469,15 @@ const Schedule = () => {
                                     <HoverCardTrigger asChild>
                                       <div 
                                         className={`calendar-event ${event.category} rounded-sm px-2 py-1 text-xs cursor-pointer hover:shadow-md transition-all`}
-                                        title={event.title}
                                       >
                                         {event.title}
                                       </div>
                                     </HoverCardTrigger>
                                     <HoverCardContent 
-                                      className="w-80 p-0 border-cambridge-blue/30 shadow-lg"
+                                      className="w-80 p-0 border-cambridge-blue/30 shadow-lg backdrop-blur-md bg-white/80"
                                       side="right"
                                     >
-                                      <div className="p-4 border-b border-olivine/20 bg-tea-green/10">
+                                      <div className="p-4 border-b border-olivine/20 bg-gradient-to-r from-white to-tea-green/20">
                                         <div className="flex justify-between items-start">
                                           <div>
                                             <Badge 
@@ -429,18 +530,27 @@ const Schedule = () => {
                                           <p>{event.description}</p>
                                         </div>
                                       </div>
-                                      <div className="p-3 bg-tea-green/10 border-t border-olivine/20 flex justify-end gap-2">
-                                        <Button variant="outline" size="sm" className="h-8 text-xs border-cambridge-blue/30 text-cambridge-blue">
-                                          Edit
+                                      <div className="p-3 bg-gradient-to-r from-tea-green/10 to-white border-t border-olivine/20 flex justify-end gap-2">
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm" 
+                                          className="h-8 text-xs border-cambridge-blue/30 text-cambridge-blue"
+                                          onClick={() => handleReschedule(event)}
+                                        >
+                                          Reschedule
                                         </Button>
-                                        <Button size="sm" className="h-8 text-xs bg-oxford-blue text-white">
+                                        <Button 
+                                          size="sm" 
+                                          className="h-8 text-xs bg-gradient-to-r from-oxford-blue to-charcoal text-white"
+                                          onClick={() => handleViewDetails(event)}
+                                        >
                                           View Details
                                         </Button>
                                       </div>
                                     </HoverCardContent>
                                   </HoverCard>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-white/80 backdrop-blur-md border-cambridge-blue/20">
                                   <p className="text-xs">{event.title} - {event.time}</p>
                                   <p className="text-xs">Trainer: {event.trainer.name}</p>
                                 </TooltipContent>
@@ -466,7 +576,7 @@ const Schedule = () => {
                     <div className="bg-tea-green/20 p-3 font-medium text-oxford-blue">{day}</div>
                     <div className="p-4">
                       {events.slice(index, index + 1).map(event => (
-                        <div key={event.id} className="flex items-center justify-between p-3 border border-olivine/20 rounded-md bg-card/50 hover:bg-tea-green/10 transition-colors">
+                        <div key={event.id} className="flex items-center justify-between p-3 border border-olivine/20 rounded-md bg-white/50 hover:bg-tea-green/10 transition-colors backdrop-blur-sm">
                           <div className="flex items-center">
                             <div className={`w-2 h-10 rounded-full ${
                               event.category === "fire" 
@@ -519,7 +629,7 @@ const Schedule = () => {
                 {events.slice(0, 2).map(event => (
                   <div 
                     key={event.id} 
-                    className="relative border border-olivine/20 rounded-lg p-4 flex items-start gap-4"
+                    className="relative border border-olivine/20 rounded-lg p-4 flex items-start gap-4 bg-white/80 backdrop-blur-sm"
                   >
                     <div className="text-center min-w-24">
                       <div className="text-sm font-medium text-oxford-blue">{event.time.split(" - ")[0]}</div>
@@ -553,6 +663,7 @@ const Schedule = () => {
                             variant="outline" 
                             size="sm" 
                             className="border-cambridge-blue/30 text-cambridge-blue"
+                            onClick={() => handleReschedule(event)}
                           >
                             Edit
                           </Button>
@@ -560,6 +671,13 @@ const Schedule = () => {
                             variant="outline" 
                             size="sm"
                             className="border-charcoal/30 text-charcoal"
+                            onClick={() => {
+                              toast({
+                                title: "Training Canceled",
+                                description: `${event.title} has been canceled.`,
+                                variant: "destructive"
+                              });
+                            }}
                           >
                             Cancel
                           </Button>

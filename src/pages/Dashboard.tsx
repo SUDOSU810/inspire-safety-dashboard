@@ -1,5 +1,6 @@
 
 import { BarChart3, Calendar, File, Users, TrendingUp, ShieldCheck, Flame, RefreshCw, Award } from "lucide-react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import ActivityChart from "@/components/dashboard/ActivityChart";
@@ -7,21 +8,37 @@ import UpcomingTrainings from "@/components/dashboard/UpcomingTrainings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate data refresh
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Dashboard Refreshed",
+        description: "Latest data has been loaded successfully.",
+      });
+    }, 1000);
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-montserrat text-foreground tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold font-montserrat text-oxford-blue tracking-tight">Dashboard</h1>
+            <p className="text-charcoal">
               Welcome back to Inspire Safety Foundation dashboard
             </p>
           </div>
-          <Button variant="outline" size="sm" className="gap-2">
-            <RefreshCw size={16} />
-            Refresh Data
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={isLoading}>
+            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+            {isLoading ? "Refreshing..." : "Refresh Data"}
           </Button>
         </div>
       </div>

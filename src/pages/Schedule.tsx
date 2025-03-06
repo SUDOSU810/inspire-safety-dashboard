@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { format, addDays, startOfWeek, getDay, isSameDay, parse } from "date-fns";
@@ -130,11 +131,19 @@ const Schedule = () => {
   
   // Get events for a specific date
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => isSameDay(event.date, date));
+    return events.filter(event => {
+      // Compare year, month, and day
+      return (
+        event.date.getFullYear() === date.getFullYear() &&
+        event.date.getMonth() === date.getMonth() &&
+        event.date.getDate() === date.getDate()
+      );
+    });
   };
 
   // Handle adding a new event
   const handleAddEvent = () => {
+    // Validate form inputs
     if (!newEvent.title || !newEvent.time || !newEvent.type || !newEvent.trainer) {
       toast({
         title: "Error",
@@ -148,6 +157,7 @@ const Schedule = () => {
     const trainingType = trainingTypes.find(t => t.name === newEvent.type);
     const category = trainingType ? trainingType.category : "";
 
+    // Create new event object
     const eventToAdd = {
       id: events.length + 1,
       title: newEvent.title,
@@ -159,8 +169,10 @@ const Schedule = () => {
       location: newEvent.location,
     };
 
+    // Update events state with new event
     setEvents(prevEvents => [...prevEvents, eventToAdd]);
     
+    // Close dialog
     setIsAddEventOpen(false);
     
     // Reset form
@@ -174,6 +186,7 @@ const Schedule = () => {
       location: "",
     });
 
+    // Show success toast
     toast({
       title: "Success",
       description: "Training session has been scheduled",
@@ -244,7 +257,7 @@ const Schedule = () => {
                   Add Training
                 </Button>
               </DialogTrigger>
-              <DialogContent className="glass-panel">
+              <DialogContent className="glass-panel pointer-events-auto">
                 <DialogHeader>
                   <DialogTitle>Schedule New Training</DialogTitle>
                   <DialogDescription>
@@ -306,11 +319,12 @@ const Schedule = () => {
                     <Label className="text-right">Type</Label>
                     <Select
                       onValueChange={(value) => handleSelectChange("type", value)}
+                      value={newEvent.type}
                     >
                       <SelectTrigger className="col-span-3 glass-button">
                         <SelectValue placeholder="Select training type" />
                       </SelectTrigger>
-                      <SelectContent className="glass-panel">
+                      <SelectContent className="glass-panel pointer-events-auto">
                         {trainingTypes.map((type) => (
                           <SelectItem key={type.id} value={type.name}>
                             {type.name}
@@ -323,6 +337,7 @@ const Schedule = () => {
                     <Label className="text-right">Trainer</Label>
                     <Select
                       onValueChange={(value) => handleSelectChange("trainer", value)}
+                      value={newEvent.trainer ? newEvent.trainer.toString() : ""}
                     >
                       <SelectTrigger className="col-span-3 glass-button">
                         <SelectValue placeholder="Select a trainer" />

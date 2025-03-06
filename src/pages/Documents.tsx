@@ -1,21 +1,16 @@
+
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   HoverCard,
   HoverCardContent,
@@ -23,315 +18,212 @@ import {
 } from "@/components/ui/hover-card";
 import {
   FileText,
-  MoreVertical,
-  Filter,
-  Search,
-  Plus,
   Download,
-  Eye,
-  Trash2,
-  Edit,
+  Upload,
+  Search,
+  Filter,
+  Plus,
+  File,
+  Clock,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import FileUpload from "@/components/ui/FileUpload";
-import { useToast } from "@/components/ui/use-toast";
-
-// Mock data
-const documentsData = [
-  {
-    id: 1,
-    title: "Project Proposal",
-    category: "Proposals",
-    status: "In Review",
-    lastModified: "2024-01-20",
-    size: "2.2 MB",
-    owner: "John Doe",
-  },
-  {
-    id: 2,
-    title: "Marketing Strategy",
-    category: "Marketing",
-    status: "Approved",
-    lastModified: "2024-01-15",
-    size: "1.8 MB",
-    owner: "Jane Smith",
-  },
-  {
-    id: 3,
-    title: "Financial Report Q4",
-    category: "Finance",
-    status: "Completed",
-    lastModified: "2024-01-10",
-    size: "3.5 MB",
-    owner: "Alice Johnson",
-  },
-  {
-    id: 4,
-    title: "HR Policy Update",
-    category: "HR",
-    status: "Draft",
-    lastModified: "2024-01-05",
-    size: "1.5 MB",
-    owner: "Bob Williams",
-  },
-  {
-    id: 5,
-    title: "Sales Presentation",
-    category: "Sales",
-    status: "In Progress",
-    lastModified: "2023-12-30",
-    size: "2.0 MB",
-    owner: "Charlie Brown",
-  },
-];
+import { documents } from "@/utils/documentData";
+import { useToast } from "@/hooks/use-toast";
 
 const Documents = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
-  const [isHovering, setIsHovering] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const { toast } = useToast();
 
-  const filteredDocuments = documentsData.filter((document) => {
-    const searchMatch = document.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const categoryMatch =
-      categoryFilter === "All" || document.category === categoryFilter;
-    return searchMatch && categoryMatch;
-  });
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
 
-  const handleDownload = (document: any) => {
-    toast({
-      title: "Download started",
-      description: `Downloading ${document.title}...`,
-      variant: "default",
+    Array.from(files).forEach((file) => {
+      const fileId = `upload-${Date.now()}`;
+      setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
+
+      // Simulate upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(prev => ({ ...prev, [fileId]: progress }));
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          toast({
+            title: "Upload Complete",
+            description: `${file.name} has been uploaded successfully.`,
+          });
+          setUploadProgress(prev => {
+            const newProgress = { ...prev };
+            delete newProgress[fileId];
+            return newProgress;
+          });
+        }
+      }, 500);
     });
   };
 
-  const handleAddDocument = () => {
+  const handleDownload = (doc: typeof documents[0]) => {
     toast({
-      title: "Add Document",
-      description: "Document upload dialog opened",
-      variant: "default",
+      title: "Download Started",
+      description: `Downloading ${doc.title}...`,
     });
+    // Simulate download - in real app, use actual file download logic
+    setTimeout(() => {
+      toast({
+        title: "Download Complete",
+        description: `${doc.title} has been downloaded.`,
+      });
+    }, 2000);
   };
 
-  const handleUploadSuccess = (fileName: string) => {
-    toast({
-      title: "Upload Successful",
-      description: `${fileName} has been uploaded successfully!`,
-      variant: "default",
-    });
-  };
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return "bg-success-green/20 text-success-green border-success-green/30";
-      case "In Review":
-        return "bg-chart-blue/20 text-chart-blue border-chart-blue/30";
-      case "Completed":
-        return "bg-vibrant-green/20 text-vibrant-green border-vibrant-green/30";
-      case "Draft":
-        return "bg-charcoal/20 text-charcoal border-charcoal/30";
-      case "In Progress":
-        return "bg-chart-orange/20 text-chart-orange border-chart-orange/30";
+  const getFileIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'pdf':
+        return <FileText className="text-destructive" />;
+      case 'xlsx':
+        return <FileText className="text-success-green" />;
       default:
-        return "bg-accent/20 text-accent border-accent/30";
+        return <File />;
     }
   };
 
   return (
     <DashboardLayout>
-      <div className="animate-fade-in">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="page-title">Document Library</h1>
-            <p className="text-charcoal font-raleway mt-1">
-              Manage and organize your training documents
-            </p>
-          </div>
-          <div className="space-x-2">
-            <Button variant="outline" className="glass-button">
-              <Download className="w-4 h-4 mr-2" />
-              Download All
-            </Button>
-            <Button variant="creative" onClick={handleAddDocument}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Document
-            </Button>
-          </div>
+      <div className="mb-6 animate-fade-in">
+        <h1 className="text-3xl font-bold font-montserrat text-oxford-blue">Document Library</h1>
+        <p className="text-charcoal">
+          Access and manage safety training documents
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-charcoal" />
+          <Input
+            type="search"
+            placeholder="Search documents..."
+            className="pl-9 bg-white border-cambridge-blue/30"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        <div className="glass-panel p-4 mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center w-full md:w-auto">
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search documents..."
-                  className="pl-10 border-accent/20 focus:border-accent"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+        <div className="flex items-center gap-2">
+          <Input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            multiple
+            onChange={handleFileUpload}
+          />
+          <Button variant="outline" className="glass-button">
+            <Filter className="w-4 h-4 mr-2" />
+            Filter
+          </Button>
+          <Button 
+            variant="creative"
+            onClick={() => document.getElementById('file-upload')?.click()}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Files
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        {Object.entries(uploadProgress).map(([fileId, progress]) => (
+          <Card key={fileId} className="bg-white/50 backdrop-blur-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Upload className="h-4 w-4 text-success-green" />
+                  <span className="text-sm font-medium">Uploading...</span>
+                </div>
+                <span className="text-sm text-muted-foreground">{progress}%</span>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="ml-2 glass-button">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 glass-panel">
-                  <DropdownMenuItem onClick={() => setCategoryFilter("All")}>
-                    All Categories
-                  </DropdownMenuItem>
-                  <Separator />
-                  <DropdownMenuItem onClick={() => setCategoryFilter("Proposals")}>
-                    Proposals
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCategoryFilter("Marketing")}>
-                    Marketing
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCategoryFilter("Finance")}>
-                    Finance
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCategoryFilter("HR")}>
-                    HR
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCategoryFilter("Sales")}>
-                    Sales
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <FileUpload onUploadSuccess={handleUploadSuccess} />
-          </div>
-        </div>
+              <Progress value={progress} className="h-2" />
+            </CardContent>
+          </Card>
+        ))}
 
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {filteredDocuments.map((document) => (
-            <HoverCard key={document.id} openDelay={200} closeDelay={100}>
+        {documents
+          .filter(doc => 
+            doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            doc.category.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+          .map((doc) => (
+            <HoverCard key={doc.id}>
               <HoverCardTrigger asChild>
-                <Card 
-                  className="glass-card overflow-visible transition-all duration-300"
-                  onMouseEnter={() => setIsHovering(document.id)}
-                  onMouseLeave={() => setIsHovering(null)}
-                >
-                  <CardHeader className="bg-gradient-to-r from-white to-accent/5 pb-2">
-                    <CardTitle className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center mr-3">
-                          <FileText className="h-4 w-4 text-accent" />
+                <Card className="hover:shadow-md transition-all duration-300">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                          {getFileIcon(doc.type)}
                         </div>
-                        <span className="font-raleway tracking-tight text-oxford-blue">
-                          {document.title}
-                        </span>
+                        <div>
+                          <h3 className="font-medium text-oxford-blue">{doc.title}</h3>
+                          <Badge 
+                            variant="outline" 
+                            className={
+                              doc.category === "Fire Safety" 
+                                ? "bg-destructive/10 text-destructive border-destructive/30"
+                                : doc.category === "Road Safety"
+                                ? "bg-oxford-blue/10 text-oxford-blue border-oxford-blue/30"
+                                : "bg-success-green/10 text-success-green border-success-green/30"
+                            }
+                          >
+                            {doc.category}
+                          </Badge>
+                        </div>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="glass-panel">
-                          <DropdownMenuItem onClick={() => handleDownload(document)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Preview
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <Separator />
-                          <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </CardTitle>
-                    <CardDescription className="font-raleway">
-                      {document.category}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-2">
-                    <div className="text-sm text-muted-foreground font-raleway space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-charcoal/70">Modified:</span>
-                        <span className="font-medium text-charcoal">{document.lastModified}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-charcoal/70">Size:</span>
-                        <span className="font-medium text-charcoal">{document.size}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between items-center pt-2 pb-3">
-                    <Badge className={getBadgeVariant(document.status)}>
-                      {document.status}
-                    </Badge>
-                    <div className="text-xs text-muted-foreground font-raleway">
-                      By: {document.owner}
-                    </div>
-                  </CardFooter>
-                  {isHovering === document.id && (
-                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 animate-fade-in">
-                      <Button variant="secondary" size="sm" className="h-7 rounded-full shadow-md" onClick={() => handleDownload(document)}>
-                        <Download className="h-3.5 w-3.5" />
-                        <span className="text-xs">Download</span>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleDownload(doc)}
+                      >
+                        <Download className="h-4 w-4" />
                       </Button>
                     </div>
-                  )}
+                    <div className="mt-4 flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-1" />
+                      Uploaded on {doc.uploadDate}
+                      <span className="mx-2">•</span>
+                      {doc.fileSize}
+                    </div>
+                  </CardContent>
                 </Card>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80 glass-panel">
+              <HoverCardContent className="w-80">
                 <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-accent" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold">{document.title}</h4>
-                      <p className="text-xs text-muted-foreground">{document.category}</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    {getFileIcon(doc.type)}
+                    <h4 className="font-semibold">{doc.title}</h4>
                   </div>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-y-2 text-sm">
-                    <span className="text-muted-foreground">Status:</span>
-                    <Badge className={getBadgeVariant(document.status)}>
-                      {document.status}
-                    </Badge>
-                    <span className="text-muted-foreground">Modified:</span>
-                    <span>{document.lastModified}</span>
-                    <span className="text-muted-foreground">Size:</span>
-                    <span>{document.size}</span>
-                    <span className="text-muted-foreground">Owner:</span>
-                    <span>{document.owner}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between pt-2">
-                    <Button variant="outline" size="sm" className="glass-button">
-                      <Eye className="h-3.5 w-3.5 mr-1" />
-                      Preview
-                    </Button>
-                    <Button variant="accent" size="sm">
-                      <Download className="h-3.5 w-3.5 mr-1" />
-                      Download
-                    </Button>
+                  <p className="text-sm text-muted-foreground">
+                    This document contains important safety information and guidelines.
+                    Click to download or view details.
+                  </p>
+                  <div className="pt-2 space-y-1 text-sm">
+                    <div className="flex items-center text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Latest version
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Required reading
+                    </div>
                   </div>
                 </div>
               </HoverCardContent>
             </HoverCard>
           ))}
-        </div>
       </div>
     </DashboardLayout>
   );

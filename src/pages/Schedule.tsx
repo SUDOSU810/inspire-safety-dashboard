@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { format, addDays, startOfWeek, getDay, isSameDay } from "date-fns";
+import { format, addDays, startOfWeek, getDay, isSameDay, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -107,6 +107,13 @@ const Schedule = () => {
     location: "",
   });
 
+  // Effect to update newEvent.date when selectedDate changes
+  useEffect(() => {
+    if (selectedDate) {
+      setNewEvent(prev => ({ ...prev, date: selectedDate }));
+    }
+  }, [selectedDate]);
+
   // Generate days for calendar view
   const generateCalendarDays = () => {
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -153,7 +160,7 @@ const Schedule = () => {
       location: newEvent.location,
     };
 
-    setEvents([...events, eventToAdd]);
+    setEvents(prevEvents => [...prevEvents, eventToAdd]);
     
     setIsAddEventOpen(false);
     
@@ -171,7 +178,7 @@ const Schedule = () => {
     toast({
       title: "Success",
       description: "Training session has been scheduled",
-      variant: "success",
+      variant: "default",
     });
   };
 
@@ -270,12 +277,13 @@ const Schedule = () => {
                           {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 glass-panel">
+                      <PopoverContent className="w-auto p-0 glass-panel pointer-events-auto">
                         <Calendar
                           mode="single"
                           selected={selectedDate}
                           onSelect={setSelectedDate}
                           initialFocus
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -320,7 +328,7 @@ const Schedule = () => {
                       <SelectTrigger className="col-span-3 glass-button">
                         <SelectValue placeholder="Select a trainer" />
                       </SelectTrigger>
-                      <SelectContent className="glass-panel">
+                      <SelectContent className="glass-panel pointer-events-auto">
                         {trainers.map((trainer) => (
                           <SelectItem key={trainer.id} value={trainer.id.toString()}>
                             {trainer.name} - {trainer.specialty}
@@ -353,7 +361,7 @@ const Schedule = () => {
           </div>
         </div>
 
-        <Card className="glass-panel mb-6">
+        <Card className="glass-panel mb-6 hover:shadow-md transition-all">
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-4">
               <Button variant="ghost" size="icon" onClick={navigatePrevious}>
@@ -383,10 +391,12 @@ const Schedule = () => {
                 return (
                   <div 
                     key={index}
-                    className={`calendar-day ${
+                    className={`calendar-day group ${
                       isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
                     } ${
                       isSameDay(day, new Date()) ? 'calendar-day-active' : ''
+                    } ${
+                      isSameDay(day, selectedDate || new Date()) ? 'bg-tea-green/30 font-medium' : ''
                     }`}
                     onClick={() => {
                       setSelectedDate(day);
@@ -395,8 +405,8 @@ const Schedule = () => {
                       }
                     }}
                   >
-                    <div className="relative h-full w-full">
-                      <span className="absolute top-0 right-0">{day.getDate()}</span>
+                    <div className="relative h-full w-full group-hover:bg-tea-green/20 rounded-md transition-colors p-2">
+                      <span className="absolute top-0 right-2">{day.getDate()}</span>
                       <div className="mt-6 space-y-1">
                         {dayEvents.slice(0, 2).map((event, idx) => (
                           <div 

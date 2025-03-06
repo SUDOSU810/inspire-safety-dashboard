@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   BarChart3, 
@@ -27,7 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type NavItemProps = {
   to: string;
@@ -68,8 +67,18 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
   const { toast } = useToast();
   const currentPath = location.pathname;
 
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('sidebarOpen');
+    if (savedState !== null) {
+      setSidebarOpen(savedState === 'true');
+    }
+  }, []);
+
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    const newState = !sidebarOpen;
+    setSidebarOpen(newState);
+    localStorage.setItem('sidebarOpen', String(newState));
   };
 
   const handleRefresh = () => {
@@ -111,7 +120,7 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-cambridge-blue/20">
           <Link 
             to="/dashboard" 
-            className={`flex items-center gap-3 ${!sidebarOpen && "opacity-0 w-0 overflow-hidden"}`}
+            className={`flex items-center gap-3 ${!sidebarOpen ? "opacity-0 w-0 overflow-hidden" : ""}`}
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-vibrant-green to-success-green flex items-center justify-center shadow-md">
               <Flame className="h-6 w-6 text-white" />
@@ -131,7 +140,7 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
         </div>
 
         <div className="flex-1 py-6 px-3 overflow-y-auto">
-          <div className={`mb-6 px-2 ${!sidebarOpen && "opacity-0 h-0 overflow-hidden"}`}>
+          <div className={`mb-6 px-2 ${!sidebarOpen ? "opacity-0 h-0 overflow-hidden" : ""}`}>
             <h2 className="text-xs uppercase font-raleway font-semibold text-tea-green tracking-wider pl-2 mb-4">Main Menu</h2>
           </div>
           <nav className="space-y-2.5 px-2">

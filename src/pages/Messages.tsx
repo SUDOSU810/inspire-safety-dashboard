@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Edit, Send, Paperclip, User, Clock, CheckCheck, MessageSquare, Users, Plus } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample conversations data
 const conversations = [
@@ -110,6 +110,7 @@ const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState(conversations[0]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
   const filteredConversations = conversations.filter(
     convo => convo.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -119,8 +120,35 @@ const Messages = () => {
     if (newMessage.trim()) {
       // In a real app, this would send the message to a backend
       console.log("Sending message:", newMessage);
+      
+      // Add the message to the UI (this would normally come from the backend)
+      const messageToAdd = {
+        id: messages.length + 1,
+        sender: "You",
+        content: newMessage,
+        timestamp: format(new Date(), "h:mm a"),
+        isOwn: true,
+      };
+      
       setNewMessage("");
+      
+      toast({
+        title: "Message Sent",
+        description: "Your message has been delivered",
+        variant: "default",
+      });
     }
+  };
+
+  // Helper function to format current time
+  const format = (date, format) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
   };
 
   return (
@@ -157,6 +185,7 @@ const Messages = () => {
               />
             </div>
           </div>
+          
           <ScrollArea className="h-[calc(100vh-340px)]">
             <div className="px-2 py-2">
               <Tabs defaultValue="all">
@@ -265,6 +294,7 @@ const Messages = () => {
               </Tabs>
             </div>
           </ScrollArea>
+          
           <div className="p-3 border-t border-cambridge-blue/20 bg-tea-green/5">
             <Button variant="outline" className="w-full border-cambridge-blue/30">
               <Plus size={16} className="mr-2" />
@@ -319,7 +349,7 @@ const Messages = () => {
                 >
                   <div className={`max-w-[75%] ${message.isOwn ? 'order-2' : 'order-1 flex gap-3'}`}>
                     {!message.isOwn && (
-                      <Avatar className="h-8 w-8 mt-1">
+                      <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
                         <AvatarImage src={selectedConversation.avatar} />
                         <AvatarFallback className="bg-success-green">
                           {selectedConversation.initials}
@@ -337,7 +367,7 @@ const Messages = () => {
                             : 'bg-tea-green/30 text-oxford-blue'
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-sm break-words">{message.content}</p>
                       </div>
                       <div className={`flex items-center mt-1 text-xs text-charcoal gap-1 ${message.isOwn ? 'justify-end' : 'justify-start'}`}>
                         <Clock size={10} />
@@ -355,7 +385,7 @@ const Messages = () => {
           
           <div className="p-3 border-t border-cambridge-blue/20 bg-white/80 backdrop-blur-sm">
             <div className="flex items-end gap-2">
-              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 flex-shrink-0">
                 <Paperclip size={18} className="text-cambridge-blue" />
               </Button>
               <Textarea 
@@ -373,7 +403,7 @@ const Messages = () => {
               <Button 
                 onClick={handleSendMessage} 
                 disabled={!newMessage.trim()} 
-                className="rounded-xl h-10 bg-gradient-to-r from-success-green to-cambridge-blue text-white"
+                className="rounded-xl h-10 bg-gradient-to-r from-success-green to-cambridge-blue text-white flex-shrink-0"
               >
                 <Send size={18} />
               </Button>

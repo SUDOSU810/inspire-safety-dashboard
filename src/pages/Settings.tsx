@@ -7,10 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Mail, Shield, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import ProfileSection from "./ProfileSection";
 
 const Settings = () => {
   return (
@@ -43,83 +43,7 @@ const Settings = () => {
         </TabsList>
 
         <TabsContent value="profile">
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-5">
-            <Card className="elegant-card overflow-hidden col-span-2">
-              <CardHeader className="border-b border-white/5 bg-card/80">
-                <CardTitle className="text-lg font-semibold text-white">Profile Picture</CardTitle>
-                <CardDescription>Update your photo and personal details</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 flex flex-col items-center">
-                <Avatar className="h-24 w-24 border-2 border-white/10 mb-4">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-gradient-to-br from-safety-orange to-accent text-white text-xl">
-                    AD
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  <Button variant="outline" size="sm">Upload New</Button>
-                  <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10">Remove</Button>
-                </div>
-
-                <p className="text-xs text-muted-foreground text-center">
-                  Allowed formats: JPG, PNG, GIF. Maximum size: 2MB
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="elegant-card overflow-hidden col-span-3">
-              <CardHeader className="border-b border-white/5 bg-card/80">
-                <CardTitle className="text-lg font-semibold text-white">Personal Information</CardTitle>
-                <CardDescription>Update your personal information</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Admin" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="User" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue="admin@inspiresafety.org" />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue="+91 98765 43210" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="role">Role</Label>
-                      <Input id="role" defaultValue="Administrator" disabled />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      placeholder="Write a short bio about yourself"
-                      className="resize-none"
-                      rows={4}
-                      defaultValue="Administrator at Inspire Safety Foundation, overseeing all safety training programs across India."
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button>Save Changes</Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+          <ProfileSection />
         </TabsContent>
 
         <TabsContent value="notifications">

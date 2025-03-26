@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Flame, Lock, Mail, Shield, UserPlus } from "lucide-react";
+import { Flame, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -15,47 +14,57 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 
 // Define form schema with Zod
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().default(false),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
-const Index = () => {
+const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Initialize form with react-hook-form and zod validation
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
+      confirmPassword: "",
+      name: ""
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof loginSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof signupSchema>) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
+        options: {
+          data: {
+            name: values.name,
+          }
+        }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "You've successfully logged in!",
+        title: "Account Created",
+        description: "Your account has been created successfully. Please check your email for verification.",
       });
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Signup error:", error);
       toast({
-        title: "Login Failed",
-        description: error.message || "Please check your credentials and try again",
+        title: "Signup Failed",
+        description: error.message || "Could not create your account. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -77,26 +86,48 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-4xl font-bold font-montserrat text-black mb-2 tracking-tight">
-            Inspire Safety
+            Create Account
           </h1>
           <p className="text-muted-foreground">
-            Admin Dashboard for Safety Training Management
+            Join Inspire Safety to manage training programs
           </p>
         </div>
 
         <Card className="backdrop-blur-sm border border-secondary/20 shadow-lg animate-scale-in">
           <CardHeader className="space-y-1 border-b border-secondary/20">
             <CardTitle className="text-xl text-black flex items-center gap-2">
-              <Shield size={18} className="text-success-green" />
-              Sign in
+              <User size={18} className="text-success-green" />
+              Sign Up
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter your credentials to access the dashboard
+              Create a new account to access the dashboard
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-5">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <Label htmlFor="name" className="text-black/90 flex items-center gap-2">
+                        <User size={14} className="text-success-green" />
+                        Full Name
+                      </Label>
+                      <FormControl>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="John Doe"
+                          className="bg-white/50 border-secondary/30 focus:border-success-green/50 focus:ring-success-green/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="email"
@@ -110,7 +141,7 @@ const Index = () => {
                         <Input
                           id="email"
                           type="email"
-                          placeholder="admin@inspiresafety.org"
+                          placeholder="john.doe@example.com"
                           className="bg-white/50 border-secondary/30 focus:border-success-green/50 focus:ring-success-green/20"
                           {...field}
                         />
@@ -124,18 +155,10 @@ const Index = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password" className="text-black/90 flex items-center gap-2">
-                          <Lock size={14} className="text-success-green" />
-                          Password
-                        </Label>
-                        <a
-                          href="#"
-                          className="text-xs text-success-green hover:text-success-green/80 transition-colors"
-                        >
-                          Forgot Password?
-                        </a>
-                      </div>
+                      <Label htmlFor="password" className="text-black/90 flex items-center gap-2">
+                        <Lock size={14} className="text-success-green" />
+                        Password
+                      </Label>
                       <FormControl>
                         <Input
                           id="password"
@@ -151,26 +174,27 @@ const Index = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="rememberMe"
+                  name="confirmPassword"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
+                    <FormItem className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-black/90 flex items-center gap-2">
+                        <Lock size={14} className="text-success-green" />
+                        Confirm Password
+                      </Label>
                       <FormControl>
-                        <Checkbox
-                          id="remember"
-                          className="border-secondary/40 data-[state=checked]:bg-success-green/90"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                        <Input
+                          id="confirmPassword"
+                          type="password"
+                          placeholder="••••••••"
+                          className="bg-white/50 border-secondary/30 focus:border-success-green/50 focus:ring-success-green/20"
+                          {...field}
                         />
                       </FormControl>
-                      <Label
-                        htmlFor="remember"
-                        className="text-sm font-normal text-black/80"
-                      >
-                        Remember me for 30 days
-                      </Label>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
+                
                 <Button
                   type="submit"
                   variant="success"
@@ -178,32 +202,25 @@ const Index = () => {
                   className="w-full"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Signing in..." : "Sign In"}
+                  {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
-                <div className="relative flex items-center justify-center my-2">
-                  <div className="absolute border-t border-secondary/20 w-full"></div>
-                  <div className="relative bg-white px-4 text-xs text-muted-foreground">or</div>
+                
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <Link to="/" className="text-success-green hover:text-success-green/80 transition-colors">
+                      Sign in
+                    </Link>
+                  </p>
                 </div>
-                <Link to="/signup">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full flex gap-2"
-                  >
-                    <UserPlus size={16} />
-                    Create New Account
-                  </Button>
-                </Link>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="border-t border-secondary/20">
-            <p className="text-center text-sm text-muted-foreground w-full">
-              Need more info?{" "}
-              <a href="#" className="text-success-green hover:text-success-green/80 transition-colors">
-                Contact support
-              </a>
-            </p>
+          <CardFooter className="border-t border-secondary/20 flex justify-center">
+            <Link to="/" className="text-sm text-muted-foreground flex items-center gap-1 hover:text-success-green/80 transition-colors">
+              <ArrowLeft size={14} />
+              Back to Login
+            </Link>
           </CardFooter>
         </Card>
       </div>
@@ -211,4 +228,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default SignUp;

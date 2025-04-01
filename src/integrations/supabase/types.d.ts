@@ -17,7 +17,7 @@ export interface Document {
 export interface TrainingEvent {
   id: string;
   title: string;
-  date: string;
+  date: string; // ISO date string in database
   time: string;
   type: string;
   category: string;

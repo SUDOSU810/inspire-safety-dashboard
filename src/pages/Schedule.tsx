@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { format, addDays, startOfWeek, getDay, isSameDay } from "date-fns";
+import { format, addDays, startOfWeek, getDay, isSameDay, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,22 +45,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TrainingEvent } from "@/integrations/supabase/types.d";
+import { trainers, trainingTypes } from "@/constants/trainingData";
 
-const trainers = [
-  { id: 1, name: "John Doe", specialty: "Fire Safety" },
-  { id: 2, name: "Jane Smith", specialty: "Road Safety" },
-  { id: 3, name: "Bob Johnson", specialty: "Industrial Safety" },
-  { id: 4, name: "Alice Williams", specialty: "First Aid" },
-];
-
-const trainingTypes = [
-  { id: 1, name: "Fire Safety", category: "fire" },
-  { id: 2, name: "Road Safety", category: "road" },
-  { id: 3, name: "Industrial Safety", category: "industrial" },
-  { id: 4, name: "First Aid", category: "first-aid" },
-  { id: 5, name: "Hazardous Materials", category: "hazmat" },
-];
-
+// Form schema for validation
 const formSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   date: z.date({ required_error: "Please select a date" }),
@@ -73,15 +60,32 @@ const formSchema = z.object({
   notificationBody: z.string().optional(),
 });
 
+// Type for our form data
+type FormData = z.infer<typeof formSchema>;
+
+// Helper interface for mapped events from database
+interface EventWithDateObject {
+  id: string;
+  title: string;
+  date: Date;
+  time: string;
+  type: string;
+  category: string;
+  trainer_id: number;
+  location: string;
+  created_at?: string;
+  created_by?: string;
+}
+
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [events, setEvents] = useState<TrainingEvent[]>([]);
+  const [events, setEvents] = useState<EventWithDateObject[]>([]);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -116,17 +120,19 @@ const Schedule = () => {
           const formattedEvents = data.map(event => ({
             id: event.id,
             title: event.title,
-            date: new Date(event.date),
+            date: parseISO(event.date),
             time: event.time,
             type: event.type,
             category: event.category,
             trainer_id: event.trainer_id,
             location: event.location,
-          })) as unknown as TrainingEvent[];
+            created_at: event.created_at,
+            created_by: event.created_by
+          }));
           
           setEvents(formattedEvents);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching events:", error);
         toast({
           title: "Error",
@@ -156,17 +162,12 @@ const Schedule = () => {
   const calendarDays = generateCalendarDays();
   
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
-      return (
-        eventDate.getFullYear() === date.getFullYear() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getDate() === date.getDate()
-      );
-    });
+    return events.filter(event => 
+      isSameDay(event.date, date)
+    );
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormData) => {
     try {
       const trainingType = trainingTypes.find(t => t.name === values.type);
       const category = trainingType ? trainingType.category : "";
@@ -204,7 +205,7 @@ const Schedule = () => {
       }
       
       if (eventData && eventData.length > 0) {
-        const newEvent = {
+        const newEvent: EventWithDateObject = {
           id: eventData[0].id,
           title: values.title,
           date: values.date,
@@ -213,7 +214,7 @@ const Schedule = () => {
           category: category,
           trainer_id: parseInt(values.trainer),
           location: values.location || "",
-        } as TrainingEvent;
+        };
         
         setEvents(prevEvents => [...prevEvents, newEvent]);
       }
@@ -269,13 +270,13 @@ const Schedule = () => {
         const formattedEvents = data.map(event => ({
           id: event.id,
           title: event.title,
-          date: new Date(event.date),
+          date: parseISO(event.date),
           time: event.time,
           type: event.type,
           category: event.category,
           trainer_id: event.trainer_id,
           location: event.location,
-        })) as TrainingEvent[];
+        }));
         
         setEvents(formattedEvents);
       }
@@ -285,7 +286,7 @@ const Schedule = () => {
         description: "Latest training schedule has been loaded",
         variant: "default",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing events:", error);
       toast({
         title: "Error",

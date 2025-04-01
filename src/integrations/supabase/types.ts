@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      device_tokens: {
+        Row: {
+          created_at: string | null
+          device_token: string
+          device_type: string | null
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_token: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_token?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string | null
+          title: string
+          training_event_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title: string
+          training_event_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string
+          training_event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_training_event_id_fkey"
+            columns: ["training_event_id"]
+            isOneToOne: false
+            referencedRelation: "training_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -36,6 +107,45 @@ export type Database = {
           phone?: string | null
           role?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      training_events: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          date: string
+          id: string
+          location: string
+          time: string
+          title: string
+          trainer_id: number
+          type: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          id?: string
+          location: string
+          time: string
+          title: string
+          trainer_id: number
+          type: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          id?: string
+          location?: string
+          time?: string
+          title?: string
+          trainer_id?: number
+          type?: string
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { format, addDays, startOfWeek, getDay, isSameDay, parseISO } from "date-fns";
@@ -171,7 +172,7 @@ const Schedule = () => {
     try {
       const trainingType = trainingTypes.find(t => t.name === values.type);
       const category = trainingType ? trainingType.category : "";
-      const formattedDate = values.date.toISOString();
+      const formattedDate = values.date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       
       const { data: eventData, error: eventError } = await supabase
         .from('training_events')
@@ -198,7 +199,7 @@ const Schedule = () => {
             training_event_id: eventData[0].id,
             title: notificationTitle,
             body: notificationBody,
-            scheduled_for: formattedDate,
+            scheduled_for: values.date.toISOString(),
           });
         
         if (notificationError) throw notificationError;

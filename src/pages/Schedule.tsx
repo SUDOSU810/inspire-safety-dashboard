@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { format, addDays, startOfWeek, getDay, isSameDay, parse } from "date-fns";
+import { format, addDays, startOfWeek, getDay, isSameDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,8 +44,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { TrainingEvent } from "@/integrations/supabase/types.d";
 
-// Sample data for trainers and training types
 const trainers = [
   { id: 1, name: "John Doe", specialty: "Fire Safety" },
   { id: 2, name: "Jane Smith", specialty: "Road Safety" },
@@ -62,7 +61,6 @@ const trainingTypes = [
   { id: 5, name: "Hazardous Materials", category: "hazmat" },
 ];
 
-// Form schema for validation
 const formSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   date: z.date({ required_error: "Please select a date" }),
@@ -78,12 +76,11 @@ const formSchema = z.object({
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<TrainingEvent[]>([]);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Initialize react-hook-form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,14 +96,12 @@ const Schedule = () => {
     },
   });
 
-  // Effect to update form.date when selectedDate changes
   useEffect(() => {
     if (selectedDate) {
       form.setValue("date", selectedDate);
     }
   }, [selectedDate, form]);
 
-  // Fetch events from Supabase
   useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
@@ -118,7 +113,6 @@ const Schedule = () => {
         if (error) throw error;
         
         if (data) {
-          // Transform Supabase data to match our events format
           const formattedEvents = data.map(event => ({
             id: event.id,
             title: event.title,
@@ -126,9 +120,9 @@ const Schedule = () => {
             time: event.time,
             type: event.type,
             category: event.category,
-            trainer: event.trainer_id,
+            trainer_id: event.trainer_id,
             location: event.location,
-          }));
+          })) as unknown as TrainingEvent[];
           
           setEvents(formattedEvents);
         }
@@ -147,7 +141,6 @@ const Schedule = () => {
     fetchEvents();
   }, [toast]);
 
-  // Generate days for calendar view
   const generateCalendarDays = () => {
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
     let days = [];
@@ -162,29 +155,23 @@ const Schedule = () => {
 
   const calendarDays = generateCalendarDays();
   
-  // Get events for a specific date
   const getEventsForDate = (date: Date) => {
     return events.filter(event => {
-      // Compare year, month, and day
+      const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
       return (
-        event.date.getFullYear() === date.getFullYear() &&
-        event.date.getMonth() === date.getMonth() &&
-        event.date.getDate() === date.getDate()
+        eventDate.getFullYear() === date.getFullYear() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getDate() === date.getDate()
       );
     });
   };
 
-  // Handle form submission to add a new event
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Find the category based on the selected training type
       const trainingType = trainingTypes.find(t => t.name === values.type);
       const category = trainingType ? trainingType.category : "";
-      
-      // Format the date for Supabase
       const formattedDate = values.date.toISOString();
       
-      // Insert the new event into Supabase
       const { data: eventData, error: eventError } = await supabase
         .from('training_events')
         .insert({
@@ -200,7 +187,6 @@ const Schedule = () => {
       
       if (eventError) throw eventError;
       
-      // If notification is requested, create a notification record
       if (values.sendNotification && eventData && eventData.length > 0) {
         const notificationTitle = values.notificationTitle || `New Training: ${values.title}`;
         const notificationBody = values.notificationBody || `${values.type} training scheduled for ${format(values.date, 'PPP')} at ${values.time}`;
@@ -217,7 +203,6 @@ const Schedule = () => {
         if (notificationError) throw notificationError;
       }
       
-      // Create new event object for UI
       if (eventData && eventData.length > 0) {
         const newEvent = {
           id: eventData[0].id,
@@ -226,21 +211,16 @@ const Schedule = () => {
           time: values.time,
           type: values.type,
           category: category,
-          trainer: parseInt(values.trainer),
+          trainer_id: parseInt(values.trainer),
           location: values.location || "",
-        };
+        } as TrainingEvent;
         
-        // Update events state with new event
         setEvents(prevEvents => [...prevEvents, newEvent]);
       }
       
-      // Close dialog
       setIsAddEventOpen(false);
-      
-      // Reset form
       form.reset();
       
-      // Show success toast
       toast({
         title: "Success",
         description: values.sendNotification 
@@ -259,27 +239,23 @@ const Schedule = () => {
     }
   };
 
-  // Navigate to previous month
   const navigatePrevious = () => {
     const prevMonth = new Date(currentDate);
     prevMonth.setMonth(prevMonth.getMonth() - 1);
     setCurrentDate(prevMonth);
   };
 
-  // Navigate to next month
   const navigateNext = () => {
     const nextMonth = new Date(currentDate);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     setCurrentDate(nextMonth);
   };
   
-  // Get trainer name by ID
   const getTrainerName = (id: number) => {
     const trainer = trainers.find(t => t.id === id);
     return trainer ? trainer.name : "Unknown";
   };
 
-  // Handle refresh button click
   const handleRefreshCalendar = async () => {
     setIsLoading(true);
     try {
@@ -290,7 +266,6 @@ const Schedule = () => {
       if (error) throw error;
       
       if (data) {
-        // Transform Supabase data to match our events format
         const formattedEvents = data.map(event => ({
           id: event.id,
           title: event.title,
@@ -298,9 +273,9 @@ const Schedule = () => {
           time: event.time,
           type: event.type,
           category: event.category,
-          trainer: event.trainer_id,
+          trainer_id: event.trainer_id,
           location: event.location,
-        }));
+        })) as TrainingEvent[];
         
         setEvents(formattedEvents);
       }
@@ -678,15 +653,15 @@ const Schedule = () => {
                     <div className="mt-4 pt-4 border-t border-accent/20">
                       <div className="flex items-center">
                         <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src={`https://i.pravatar.cc/150?u=${event.trainer}`} />
+                          <AvatarImage src={`https://i.pravatar.cc/150?u=${event.trainer_id}`} />
                           <AvatarFallback className="avatar-gradient">
-                            {getTrainerName(event.trainer).charAt(0)}
+                            {getTrainerName(event.trainer_id).charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="text-sm font-medium">{getTrainerName(event.trainer)}</div>
+                          <div className="text-sm font-medium">{getTrainerName(event.trainer_id)}</div>
                           <div className="text-xs text-muted-foreground">
-                            {trainers.find(t => t.id === event.trainer)?.specialty}
+                            {trainers.find(t => t.id === event.trainer_id)?.specialty}
                           </div>
                         </div>
                       </div>

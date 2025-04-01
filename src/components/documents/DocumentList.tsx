@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,17 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Download, Trash2, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
-
-type Document = {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  file_path: string;
-  file_type: string;
-  file_size: number;
-  created_at: string;
-};
+import type { Document } from "@/integrations/supabase/types.d";
 
 type DocumentListProps = {
   onRefresh?: () => void;
@@ -75,13 +64,13 @@ const DocumentList = ({ onRefresh }: DocumentListProps) => {
       // Create download link
       const blob = new Blob([data]);
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = window.document.createElement('a');
       a.href = url;
       a.download = document.title + '.' + document.file_path.split('.').pop();
-      document.body.appendChild(a);
+      window.document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      window.document.body.removeChild(a);
       
       toast({
         title: "Download Started",

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +44,7 @@ const ProfileSection = () => {
             throw profileError;
           }
 
+          // Handle possibly null profileData with defaults
           setUserProfile({
             email: user.email || "",
             name: profileData?.name || user.user_metadata?.name || "",

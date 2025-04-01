@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import {
   ChevronLeft,
   ChevronRight,
@@ -34,10 +36,15 @@ import {
   Clock,
   Plus,
   RefreshCw,
+  Bell,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Sample data for trainers and training types
 const trainers = [
@@ -55,64 +62,90 @@ const trainingTypes = [
   { id: 5, name: "Hazardous Materials", category: "hazmat" },
 ];
 
-// Initial training events
-const initialEvents = [
-  {
-    id: 1,
-    title: "Fire Safety Training",
-    date: new Date(2024, 0, 15),
-    time: "10:00 AM",
-    type: "Fire Safety",
-    category: "fire",
-    trainer: 1,
-    location: "Building A, Room 101",
-  },
-  {
-    id: 2,
-    title: "Road Safety Seminar",
-    date: new Date(2024, 0, 17),
-    time: "2:00 PM",
-    type: "Road Safety",
-    category: "road",
-    trainer: 2,
-    location: "Conference Center",
-  },
-  {
-    id: 3,
-    title: "Industrial Safety Workshop",
-    date: new Date(2024, 0, 20),
-    time: "9:00 AM",
-    type: "Industrial Safety",
-    category: "industrial",
-    trainer: 3,
-    location: "Factory Floor, Building C",
-  },
-];
+// Form schema for validation
+const formSchema = z.object({
+  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
+  date: z.date({ required_error: "Please select a date" }),
+  time: z.string().min(1, { message: "Please enter a time" }),
+  type: z.string({ required_error: "Please select a training type" }),
+  trainer: z.string({ required_error: "Please select a trainer" }),
+  location: z.string().optional(),
+  sendNotification: z.boolean().default(false),
+  notificationTitle: z.string().optional(),
+  notificationBody: z.string().optional(),
+});
 
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState<any[]>([]);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // State for new event form
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    date: new Date(),
-    time: "",
-    type: "",
-    category: "",
-    trainer: 0,
-    location: "",
+  // Initialize react-hook-form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      date: new Date(),
+      time: "",
+      type: "",
+      trainer: "",
+      location: "",
+      sendNotification: false,
+      notificationTitle: "",
+      notificationBody: "",
+    },
   });
 
-  // Effect to update newEvent.date when selectedDate changes
+  // Effect to update form.date when selectedDate changes
   useEffect(() => {
     if (selectedDate) {
-      setNewEvent(prev => ({ ...prev, date: selectedDate }));
+      form.setValue("date", selectedDate);
     }
-  }, [selectedDate]);
+  }, [selectedDate, form]);
+
+  // Fetch events from Supabase
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('training_events')
+          .select('*');
+        
+        if (error) throw error;
+        
+        if (data) {
+          // Transform Supabase data to match our events format
+          const formattedEvents = data.map(event => ({
+            id: event.id,
+            title: event.title,
+            date: new Date(event.date),
+            time: event.time,
+            type: event.type,
+            category: event.category,
+            trainer: event.trainer_id,
+            location: event.location,
+          }));
+          
+          setEvents(formattedEvents);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch training events",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [toast]);
 
   // Generate days for calendar view
   const generateCalendarDays = () => {
@@ -141,68 +174,89 @@ const Schedule = () => {
     });
   };
 
-  // Handle adding a new event
-  const handleAddEvent = () => {
-    // Validate form inputs
-    if (!newEvent.title || !newEvent.time || !newEvent.type || !newEvent.trainer) {
+  // Handle form submission to add a new event
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Find the category based on the selected training type
+      const trainingType = trainingTypes.find(t => t.name === values.type);
+      const category = trainingType ? trainingType.category : "";
+      
+      // Format the date for Supabase
+      const formattedDate = values.date.toISOString();
+      
+      // Insert the new event into Supabase
+      const { data: eventData, error: eventError } = await supabase
+        .from('training_events')
+        .insert({
+          title: values.title,
+          date: formattedDate,
+          time: values.time,
+          type: values.type,
+          category: category,
+          trainer_id: parseInt(values.trainer),
+          location: values.location || "",
+        })
+        .select();
+      
+      if (eventError) throw eventError;
+      
+      // If notification is requested, create a notification record
+      if (values.sendNotification && eventData && eventData.length > 0) {
+        const notificationTitle = values.notificationTitle || `New Training: ${values.title}`;
+        const notificationBody = values.notificationBody || `${values.type} training scheduled for ${format(values.date, 'PPP')} at ${values.time}`;
+        
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert({
+            training_event_id: eventData[0].id,
+            title: notificationTitle,
+            body: notificationBody,
+            scheduled_for: formattedDate,
+          });
+        
+        if (notificationError) throw notificationError;
+      }
+      
+      // Create new event object for UI
+      if (eventData && eventData.length > 0) {
+        const newEvent = {
+          id: eventData[0].id,
+          title: values.title,
+          date: values.date,
+          time: values.time,
+          type: values.type,
+          category: category,
+          trainer: parseInt(values.trainer),
+          location: values.location || "",
+        };
+        
+        // Update events state with new event
+        setEvents(prevEvents => [...prevEvents, newEvent]);
+      }
+      
+      // Close dialog
+      setIsAddEventOpen(false);
+      
+      // Reset form
+      form.reset();
+      
+      // Show success toast
+      toast({
+        title: "Success",
+        description: values.sendNotification 
+          ? "Training session has been scheduled with notification"
+          : "Training session has been scheduled",
+        variant: "default",
+      });
+      
+    } catch (error: any) {
+      console.error("Error adding event:", error);
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: error.message || "Failed to schedule training session",
         variant: "destructive",
       });
-      return;
     }
-
-    // Find the category based on the selected training type
-    const trainingType = trainingTypes.find(t => t.name === newEvent.type);
-    const category = trainingType ? trainingType.category : "";
-
-    // Create new event object
-    const eventToAdd = {
-      id: events.length + 1,
-      title: newEvent.title,
-      date: selectedDate || new Date(),
-      time: newEvent.time,
-      type: newEvent.type,
-      category: category,
-      trainer: Number(newEvent.trainer),
-      location: newEvent.location,
-    };
-
-    // Update events state with new event
-    setEvents(prevEvents => [...prevEvents, eventToAdd]);
-    
-    // Close dialog
-    setIsAddEventOpen(false);
-    
-    // Reset form
-    setNewEvent({
-      title: "",
-      date: new Date(),
-      time: "",
-      type: "",
-      category: "",
-      trainer: 0,
-      location: "",
-    });
-
-    // Show success toast
-    toast({
-      title: "Success",
-      description: "Training session has been scheduled",
-      variant: "default",
-    });
-  };
-
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewEvent(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle select changes
-  const handleSelectChange = (name: string, value: string) => {
-    setNewEvent(prev => ({ ...prev, [name]: value }));
   };
 
   // Navigate to previous month
@@ -226,13 +280,46 @@ const Schedule = () => {
   };
 
   // Handle refresh button click
-  const handleRefreshCalendar = () => {
-    // Refresh the calendar (in a real app, this might fetch new data)
-    toast({
-      title: "Calendar Refreshed",
-      description: "Latest training schedule has been loaded",
-      variant: "default",
-    });
+  const handleRefreshCalendar = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('training_events')
+        .select('*');
+      
+      if (error) throw error;
+      
+      if (data) {
+        // Transform Supabase data to match our events format
+        const formattedEvents = data.map(event => ({
+          id: event.id,
+          title: event.title,
+          date: new Date(event.date),
+          time: event.time,
+          type: event.type,
+          category: event.category,
+          trainer: event.trainer_id,
+          location: event.location,
+        }));
+        
+        setEvents(formattedEvents);
+      }
+      
+      toast({
+        title: "Calendar Refreshed",
+        description: "Latest training schedule has been loaded",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error refreshing events:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh training events",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -246,8 +333,8 @@ const Schedule = () => {
             </p>
           </div>
           <div className="space-x-2">
-            <Button variant="outline" className="glass-button" onClick={handleRefreshCalendar}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button variant="outline" className="glass-button" onClick={handleRefreshCalendar} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
             <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
@@ -264,112 +351,219 @@ const Schedule = () => {
                     Create a new training session for your team.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">
-                      Title
-                    </Label>
-                    <Input
-                      id="title"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
                       name="title"
-                      value={newEvent.title}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter training title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="col-span-3 justify-start text-left font-normal glass-button"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 glass-panel pointer-events-auto">
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={setSelectedDate}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="time" className="text-right">
-                      Time
-                    </Label>
-                    <div className="col-span-3 flex items-center">
-                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="time"
-                        name="time"
-                        value={newEvent.time}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 10:00 AM"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Type</Label>
-                    <Select
-                      onValueChange={(value) => handleSelectChange("type", value)}
-                      value={newEvent.type}
-                    >
-                      <SelectTrigger className="col-span-3 glass-button">
-                        <SelectValue placeholder="Select training type" />
-                      </SelectTrigger>
-                      <SelectContent className="glass-panel pointer-events-auto">
-                        {trainingTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.name}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Trainer</Label>
-                    <Select
-                      onValueChange={(value) => handleSelectChange("trainer", value)}
-                      value={newEvent.trainer ? newEvent.trainer.toString() : ""}
-                    >
-                      <SelectTrigger className="col-span-3 glass-button">
-                        <SelectValue placeholder="Select a trainer" />
-                      </SelectTrigger>
-                      <SelectContent className="glass-panel pointer-events-auto">
-                        {trainers.map((trainer) => (
-                          <SelectItem key={trainer.id} value={trainer.id.toString()}>
-                            {trainer.name} - {trainer.specialty}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="location" className="text-right">
-                      Location
-                    </Label>
-                    <Input
-                      id="location"
+                    
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className="pl-3 text-left font-normal glass-button"
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 glass-panel pointer-events-auto">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                  field.onChange(date);
+                                  setSelectedDate(date);
+                                }}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Time</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center">
+                              <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <Input placeholder="e.g. 10:00 AM" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="glass-button">
+                                <SelectValue placeholder="Select training type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="glass-panel pointer-events-auto">
+                              {trainingTypes.map((type) => (
+                                <SelectItem key={type.id} value={type.name}>
+                                  {type.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="trainer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trainer</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="glass-button">
+                                <SelectValue placeholder="Select a trainer" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="glass-panel pointer-events-auto">
+                              {trainers.map((trainer) => (
+                                <SelectItem key={trainer.id} value={trainer.id.toString()}>
+                                  {trainer.name} - {trainer.specialty}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
                       name="location"
-                      value={newEvent.location}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Location</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter location (optional)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddEventOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddEvent}>Save Training</Button>
-                </DialogFooter>
+                    
+                    <FormField
+                      control={form.control}
+                      name="sendNotification"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Send Notification</FormLabel>
+                            <FormDescription>
+                              Send a push notification for this training session
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {form.watch("sendNotification") && (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="notificationTitle"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Notification Title</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Custom notification title (optional)" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                Leave blank to use default: "New Training: [Title]"
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="notificationBody"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Notification Message</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Custom notification message (optional)" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                Leave blank to use default message with training details
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    )}
+                    
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsAddEventOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        <Bell className="w-4 h-4 mr-2" />
+                        Save Training
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>

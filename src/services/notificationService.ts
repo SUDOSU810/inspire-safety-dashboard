@@ -1,5 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { toast } from "@/hooks/use-toast";
 
 export interface Notification {
   id?: string;
@@ -20,6 +23,38 @@ export interface DeviceToken {
   created_at?: Date;
   last_used_at?: Date;
   is_active?: boolean;
+}
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase if we're in a browser environment
+let messaging: any = null;
+
+if (typeof window !== 'undefined') {
+  try {
+    const app = initializeApp(firebaseConfig);
+    messaging = getMessaging(app);
+    
+    // Listen for messages when the app is in the foreground
+    onMessage(messaging, (payload) => {
+      console.log('Message received in foreground:', payload);
+      toast({
+        title: payload.notification?.title || "New notification",
+        description: payload.notification?.body,
+        duration: 5000,
+      });
+    });
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+  }
 }
 
 /**
@@ -59,16 +94,43 @@ export const createNotification = async (notification: Notification) => {
 };
 
 /**
- * Placeholder for sending a push notification
- * Will be implemented with Firebase Cloud Messaging
+ * Sends a push notification using Firebase Cloud Messaging
  */
 export const sendPushNotification = async (notification: Notification, deviceTokens: string[]) => {
-  // This is a placeholder function that will be implemented when Firebase is set up
-  console.log("Would send push notification to devices:", deviceTokens);
-  console.log("Notification data:", notification);
-  
-  // For now, we'll just update the status to 'sent' in the database
   try {
+    if (!deviceTokens || deviceTokens.length === 0) {
+      console.log("No device tokens provided for push notification");
+      return null;
+    }
+
+    // Call Firebase Cloud Messaging API to send notifications
+    const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `key=YOUR_SERVER_KEY` // Replace with your Firebase server key
+      },
+      body: JSON.stringify({
+        registration_ids: deviceTokens,
+        notification: {
+          title: notification.title,
+          body: notification.body,
+        },
+        data: {
+          trainingEventId: notification.training_event_id,
+          notificationId: notification.id,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Firebase responded with status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log("FCM response:", result);
+    
+    // Update the notification status in the database
     const { data, error } = await supabase
       .from('notifications')
       .update({ 
@@ -81,7 +143,16 @@ export const sendPushNotification = async (notification: Notification, deviceTok
     if (error) throw error;
     return data[0];
   } catch (error) {
-    console.error("Error updating notification status:", error);
+    console.error("Error sending push notification:", error);
+    
+    // Update the notification status to failed
+    await supabase
+      .from('notifications')
+      .update({ 
+        status: 'failed',
+      })
+      .eq('id', notification.id);
+      
     throw error;
   }
 };
@@ -125,6 +196,51 @@ export const registerDeviceToken = async (deviceToken: DeviceToken) => {
   } catch (error) {
     console.error("Error registering device token:", error);
     throw error;
+  }
+};
+
+/**
+ * Request permission and get Firebase messaging token
+ */
+export const requestNotificationPermission = async (userId: string) => {
+  try {
+    if (!messaging) {
+      console.error("Firebase messaging is not initialized");
+      return null;
+    }
+    
+    console.log("Requesting notification permission...");
+    
+    // Request permission
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log("Notification permission denied");
+      return null;
+    }
+    
+    // Get the token
+    const token = await getToken(messaging, {
+      vapidKey: "YOUR_VAPID_KEY" // Replace with your VAPID key from Firebase
+    });
+    
+    if (token) {
+      console.log("Got FCM token:", token);
+      
+      // Register the token with our backend
+      await registerDeviceToken({
+        user_id: userId,
+        device_token: token,
+        device_type: 'web'
+      });
+      
+      return token;
+    } else {
+      console.log("No registration token available");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error requesting notification permission:", error);
+    return null;
   }
 };
 

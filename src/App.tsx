@@ -15,6 +15,9 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { supabase } from "./integrations/supabase/client";
+import { requestNotificationPermission } from "./services/notificationService";
 
 // Configure our query client
 const queryClient = new QueryClient({
@@ -27,6 +30,36 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  useEffect(() => {
+    // Check for authenticated user and request notification permission
+    const checkUserAndRegisterForNotifications = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          // User is authenticated, register for notifications
+          await requestNotificationPermission(session.user.id);
+        }
+      } catch (error) {
+        console.error("Error checking auth or registering for notifications:", error);
+      }
+    };
+
+    checkUserAndRegisterForNotifications();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          await requestNotificationPermission(session.user.id);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

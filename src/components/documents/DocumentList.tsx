@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ const DocumentList = ({ onRefresh }: DocumentListProps) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -130,7 +131,7 @@ const DocumentList = ({ onRefresh }: DocumentListProps) => {
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.description.toLowerCase().includes(searchQuery.toLowerCase());
       
-    const matchesCategory = !categoryFilter || doc.category === categoryFilter;
+    const matchesCategory = categoryFilter === "all" || doc.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
   });
@@ -161,7 +162,7 @@ const DocumentList = ({ onRefresh }: DocumentListProps) => {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="safety">Safety Manual</SelectItem>
                 <SelectItem value="training">Training Material</SelectItem>
                 <SelectItem value="reports">Reports</SelectItem>

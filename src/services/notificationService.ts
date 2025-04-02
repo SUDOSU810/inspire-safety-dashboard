@@ -107,7 +107,7 @@ export const sendPushNotification = async (notification: Notification, deviceTok
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `key=YOUR_SERVER_KEY` // You still need to add your Firebase server key here
+        'Authorization': `key=YOUR_SERVER_KEY` // You need to add your Firebase server key here
       },
       body: JSON.stringify({
         registration_ids: deviceTokens,

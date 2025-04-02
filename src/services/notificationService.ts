@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
@@ -108,7 +107,7 @@ export const sendPushNotification = async (notification: Notification, deviceTok
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `key=YOUR_SERVER_KEY` // Replace with your Firebase server key
+        'Authorization': `key=YOUR_SERVER_KEY` // You still need to add your Firebase server key here
       },
       body: JSON.stringify({
         registration_ids: deviceTokens,
@@ -220,7 +219,7 @@ export const requestNotificationPermission = async (userId: string) => {
     
     // Get the token
     const token = await getToken(messaging, {
-      vapidKey: "" // You still need to add your VAPID key here
+      vapidKey: "BGVmJJ58BMNd3SKEEWlbYmGf4qOPlHUA9Rt0l4VtLDiFAtLREoYlDuzvNuk0MhuPyP7m7XMuK7gxl3mNWCSSuMQ" // You still need to add your VAPID key here
     });
     
     if (token) {

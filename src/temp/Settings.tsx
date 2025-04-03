@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Mail, Shield, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import ProfileSection from "./ProfileSection";
+import ProfileSection from "../temp/ProfileSection";
 
 const Settings = () => {
   return (

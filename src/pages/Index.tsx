@@ -27,7 +27,7 @@ const Index = () => {
   const { toast } = useToast();
 
   // Initialize form with react-hook-form and zod validation
-  const form = useForm({
+  const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -36,7 +36,7 @@ const Index = () => {
     },
   });
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -51,7 +51,7 @@ const Index = () => {
         description: "You've successfully logged in!",
       });
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",

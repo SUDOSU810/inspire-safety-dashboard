@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,7 +95,7 @@ const ProfileSection = () => {
         title: "Profile Updated",
         description: "Your profile has been updated successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
         title: "Update Failed",
@@ -108,7 +107,7 @@ const ProfileSection = () => {
     }
   };
 
-  const handleAvatarUpload = async (e) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -166,7 +165,7 @@ const ProfileSection = () => {
         title: "Avatar Updated",
         description: "Your profile picture has been updated"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading avatar:", error);
       toast({
         title: "Upload Failed",
@@ -178,7 +177,7 @@ const ProfileSection = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setUserProfile({
       ...userProfile,

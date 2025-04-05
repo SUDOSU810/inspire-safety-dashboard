@@ -60,6 +60,7 @@ const TrainerCard = ({ trainer }) => {
 };
 
 const Trainers = () => {
+  // Sample data for trainers
   const trainers = [
     {
       id: 1,

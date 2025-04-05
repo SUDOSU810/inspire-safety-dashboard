@@ -1,5 +1,6 @@
 
-import { cva, type VariantProps } from "class-variance-authority";
+import React from 'react';
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
@@ -26,20 +27,6 @@ const statCardVariants = cva(
   }
 );
 
-export interface StatCardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof statCardVariants> {
-  title: string;
-  value: string | number;
-  description?: string; // Added description as an optional property
-  icon?: React.ReactNode;
-  trend?: {
-    value: number;
-    isUpward: boolean;
-  };
-  footer?: React.ReactNode;
-}
-
 const StatCard = ({
   className,
   variant,
@@ -51,7 +38,7 @@ const StatCard = ({
   trend,
   footer,
   ...props
-}: StatCardProps) => {
+}) => {
   return (
     <Card
       className={cn("hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm transition-all", className)}

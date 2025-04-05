@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import DocumentUpload from "./DocumentUpload";
-import DocumentList from "./DocumentList";
+import DocumentUpload from "@/components/documents/DocumentUpload";
+import DocumentList from "@/components/documents/DocumentList";
 
 const Documents = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);

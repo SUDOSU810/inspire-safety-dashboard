@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -33,7 +32,6 @@ const StatCard = ({
   size,
   title,
   value,
-  description,
   icon,
   trend,
   footer,
@@ -49,7 +47,6 @@ const StatCard = ({
           <div>
             <p className="text-sm font-medium text-charcoal mb-1">{title}</p>
             <h3 className="text-2xl font-bold mt-1 text-oxford-blue tracking-tight">{value}</h3>
-            {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
           </div>
           {icon && (
             <div className="text-cambridge-blue p-3 rounded-lg bg-gradient-to-br from-cambridge-blue/10 to-olivine/5 backdrop-blur-sm shadow-sm">

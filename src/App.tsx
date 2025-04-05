@@ -4,20 +4,20 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "../pages/Index";
-import SignUp from "./SignUp";
-import Dashboard from "./Dashboard";
-import Documents from "./Documents";
-import Schedule from "./Schedule";
-import Trainers from "./Trainers";
-import TrainerDetail from "./TrainerDetail";
-import Reports from "./Reports";
-import Settings from "./Settings";
-import Messages from "./Messages";
-import NotFound from "../pages/NotFound";
+import Index from "./pages/Index";
+import SignUp from "./pages/SignUp";
+import Dashboard from "./pages/Dashboard";
+import Documents from "./pages/Documents";
+import Schedule from "./pages/Schedule";
+import Trainers from "./pages/Trainers";
+import TrainerDetail from "./pages/TrainerDetail";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Messages from "./pages/Messages";
+import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
-import { supabase } from "../integrations/supabase/client";
-import { requestNotificationPermission } from "../services/notificationService";
+import { supabase } from "./integrations/supabase/client";
+import { requestNotificationPermission } from "./services/notificationService";
 
 // Configure our query client
 const queryClient = new QueryClient({

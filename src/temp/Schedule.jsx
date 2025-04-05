@@ -4,32 +4,34 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 
-const ScheduleItem = ({ 
-  title, 
-  date, 
-  time, 
-  location, 
-  attendees 
-}) => {
+const TrainingItem = ({ training }) => {
   return (
-    <div className="p-4 border border-secondary/20 rounded-lg hover:border-success-green/30 hover:bg-success-green/5 transition-colors">
-      <h3 className="text-base font-medium mb-2">{title}</h3>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4 text-success-green" />
-          <span>{date}</span>
+    <div className="border border-gray-200 rounded-lg p-6 mb-4 bg-white">
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">{training.title}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <div className="text-success-green">
+            <Calendar className="h-5 w-5" />
+          </div>
+          <span className="text-gray-700">{training.date}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 text-success-green" />
-          <span>{time}</span>
+        <div className="flex items-center gap-2">
+          <div className="text-success-green">
+            <Clock className="h-5 w-5" />
+          </div>
+          <span className="text-gray-700">{training.time}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4 text-success-green" />
-          <span>{location}</span>
+        <div className="flex items-center gap-2">
+          <div className="text-success-green">
+            <MapPin className="h-5 w-5" />
+          </div>
+          <span className="text-gray-700">{training.location}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4 text-success-green" />
-          <span>{attendees} attendees</span>
+        <div className="flex items-center gap-2">
+          <div className="text-success-green">
+            <Users className="h-5 w-5" />
+          </div>
+          <span className="text-gray-700">{training.attendees} attendees</span>
         </div>
       </div>
     </div>
@@ -37,7 +39,7 @@ const ScheduleItem = ({
 };
 
 const Schedule = () => {
-  const upcomingSchedules = [
+  const trainings = [
     {
       title: "Fire Safety Training",
       date: "April 10, 2025",
@@ -77,20 +79,16 @@ const Schedule = () => {
         </p>
       </div>
       
-      <div className="grid gap-6 grid-cols-1">
-        <Card className="elegant-card overflow-hidden">
-          <CardHeader className="border-b border-white/5 bg-card/80">
-            <CardTitle className="text-lg font-semibold text-white">Upcoming Training Sessions</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              {upcomingSchedules.map((schedule, index) => (
-                <ScheduleItem key={index} {...schedule} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="bg-white shadow-sm border-0">
+        <CardHeader className="border-b pb-3">
+          <CardTitle className="text-xl font-semibold">Upcoming Training Sessions</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {trainings.map((training, index) => (
+            <TrainingItem key={index} training={training} />
+          ))}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 };

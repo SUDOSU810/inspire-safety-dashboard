@@ -19,24 +19,24 @@ const Dashboard = () => {
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-6">
         <StatCard 
           title="Scheduled Trainings" 
-          value="24" 
+          value={24} 
           description="+8% from last month" 
           icon={<CalendarDays className="text-success-green" />} 
-          trend="up" 
+          trend={{ value: 8, isUpward: true }} 
         />
         <StatCard 
           title="Active Trainers" 
-          value="16" 
+          value={16} 
           description="2 new this month" 
           icon={<Users className="text-cambridge-blue" />} 
-          trend="up" 
+          trend={{ value: 2, isUpward: true }} 
         />
         <StatCard 
           title="Completed Sessions" 
-          value="142" 
+          value={142} 
           description="Goal: 180 by Q2" 
           icon={<CheckCircle className="text-chart-purple" />} 
-          trend="neutral" 
+          trend={{ value: 0, isUpward: false }} 
         />
       </div>
       

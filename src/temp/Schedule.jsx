@@ -1,74 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
-
-const TrainingItem = ({ training }) => {
-  return (
-    <div className="border border-gray-200 rounded-lg p-6 mb-4 bg-white">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">{training.title}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex items-center gap-2">
-          <div className="text-success-green">
-            <Calendar className="h-5 w-5" />
-          </div>
-          <span className="text-gray-700">{training.date}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-success-green">
-            <Clock className="h-5 w-5" />
-          </div>
-          <span className="text-gray-700">{training.time}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-success-green">
-            <MapPin className="h-5 w-5" />
-          </div>
-          <span className="text-gray-700">{training.location}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-success-green">
-            <Users className="h-5 w-5" />
-          </div>
-          <span className="text-gray-700">{training.attendees} attendees</span>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { Calendar } from "@/components/ui/calendar";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 
 const Schedule = () => {
-  const trainings = [
-    {
-      title: "Fire Safety Training",
-      date: "April 10, 2025",
-      time: "10:00 AM - 12:00 PM",
-      location: "Training Center Room 101",
-      attendees: 24
-    },
-    {
-      title: "First Aid Certification",
-      date: "April 15, 2025",
-      time: "1:00 PM - 5:00 PM",
-      location: "Medical Wing, Building B",
-      attendees: 18
-    },
-    {
-      title: "Emergency Response Drill",
-      date: "April 20, 2025",
-      time: "9:00 AM - 11:00 AM",
-      location: "Main Campus Grounds",
-      attendees: 42
-    },
-    {
-      title: "Workplace Hazard Identification",
-      date: "April 25, 2025",
-      time: "2:00 PM - 4:00 PM",
-      location: "Conference Room A",
-      attendees: 15
-    }
-  ];
+  const [date, setDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(prev => subMonths(prev, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prev => addMonths(prev, 1));
+  };
 
   return (
     <DashboardLayout>
@@ -80,13 +28,37 @@ const Schedule = () => {
       </div>
       
       <Card className="bg-white shadow-sm border-0">
-        <CardHeader className="border-b pb-3">
-          <CardTitle className="text-xl font-semibold">Upcoming Training Sessions</CardTitle>
+        <CardHeader className="border-b pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-xl font-semibold">
+            {format(currentMonth, "MMMM yyyy")}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handlePreviousMonth}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={handleNextMonth}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="pt-6">
-          {trainings.map((training, index) => (
-            <TrainingItem key={index} training={training} />
-          ))}
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            month={currentMonth}
+            className="w-full"
+            showOutsideDays={true}
+            fixedWeeks={true}
+          />
         </CardContent>
       </Card>
     </DashboardLayout>

@@ -1,41 +1,344 @@
 
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { ChevronLeft, ChevronRight, Clock, MapPin, Users, Calendar as CalendarIcon, Plus } from "lucide-react";
-import { format, addMonths, subMonths, isSameDay, isValid, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Users, Plus, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { create } from "zustand";
+import { getDay, getDaysInMonth, isSameDay, format, parseISO, isValid, addMonths, subMonths } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
+// Calendar state management with zustand
+const useCalendar = create((set) => ({
+  month: new Date().getMonth(),
+  year: new Date().getFullYear(),
+  setMonth: (month) => set({ month }),
+  setYear: (year) => set({ year }),
+}));
+
+// Calendar context
+const CalendarContext = createContext({
+  locale: 'en-US',
+  startDay: 0,
+});
+
+// Helper functions
+const monthsForLocale = (localeName, monthFormat = 'long') => {
+  const format = new Intl.DateTimeFormat(localeName, { month: monthFormat }).format;
+  return [...new Array(12).keys()].map((m) => format(new Date(Date.UTC(2021, m % 12))));
+};
+
+const daysForLocale = (locale, startDay) => {
+  const weekdays = [];
+  const baseDate = new Date(2024, 0, startDay);
+
+  for (let i = 0; i < 7; i++) {
+    weekdays.push(
+      new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(baseDate)
+    );
+    baseDate.setDate(baseDate.getDate() + 1);
+  }
+
+  return weekdays;
+};
+
+// Combobox component
+const Combobox = ({ value, setValue, data, labels, className }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          aria-expanded={open}
+          className={cn('w-40 justify-between capitalize', className)}
+        >
+          {value
+            ? data.find((item) => item.value === value)?.label
+            : labels.button}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-40 p-0">
+        <Command>
+          <CommandInput placeholder={labels.search} />
+          <CommandList>
+            <CommandEmpty>{labels.empty}</CommandEmpty>
+            <CommandGroup>
+              {data.map((item) => (
+                <CommandItem
+                  key={item.value}
+                  value={item.value}
+                  onSelect={(currentValue) => {
+                    setValue(currentValue === value ? '' : currentValue);
+                    setOpen(false);
+                  }}
+                  className="capitalize"
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === item.value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  {item.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// Out of bounds day component
+const OutOfBoundsDay = ({ day }) => (
+  <div className="relative h-full w-full bg-secondary p-1 text-muted-foreground text-xs">
+    {day}
+  </div>
+);
+
+// Calendar components
+const CalendarDatePicker = ({ className, children }) => (
+  <div className={cn('flex items-center gap-1', className)}>{children}</div>
+);
+
+const CalendarMonthPicker = ({ className }) => {
+  const { month, setMonth } = useCalendar();
+  const { locale } = useContext(CalendarContext);
+
+  return (
+    <Combobox
+      className={className}
+      value={month.toString()}
+      setValue={(value) => setMonth(Number.parseInt(value))}
+      data={monthsForLocale(locale).map((month, index) => ({
+        value: index.toString(),
+        label: month,
+      }))}
+      labels={{
+        button: 'Select month',
+        empty: 'No month found',
+        search: 'Search month',
+      }}
+    />
+  );
+};
+
+const CalendarYearPicker = ({ className, start, end }) => {
+  const { year, setYear } = useCalendar();
+
+  return (
+    <Combobox
+      className={className}
+      value={year.toString()}
+      setValue={(value) => setYear(Number.parseInt(value))}
+      data={Array.from({ length: end - start + 1 }, (_, i) => ({
+        value: (start + i).toString(),
+        label: (start + i).toString(),
+      }))}
+      labels={{
+        button: 'Select year',
+        empty: 'No year found',
+        search: 'Search year',
+      }}
+    />
+  );
+};
+
+const CalendarDatePagination = ({ className }) => {
+  const { month, year, setMonth, setYear } = useCalendar();
+
+  const handlePreviousMonth = () => {
+    if (month === 0) {
+      setMonth(11);
+      setYear(year - 1);
+    } else {
+      setMonth(month - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (month === 11) {
+      setMonth(0);
+      setYear(year + 1);
+    } else {
+      setMonth(month + 1);
+    }
+  };
+
+  return (
+    <div className={cn('flex items-center gap-2', className)}>
+      <Button onClick={() => handlePreviousMonth()} variant="ghost" size="icon">
+        <ChevronLeft size={16} />
+      </Button>
+      <Button onClick={() => handleNextMonth()} variant="ghost" size="icon">
+        <ChevronRight size={16} />
+      </Button>
+    </div>
+  );
+};
+
+const CalendarDate = ({ children }) => (
+  <div className="flex items-center justify-between p-3">{children}</div>
+);
+
+const CalendarHeader = ({ className }) => {
+  const { locale, startDay } = useContext(CalendarContext);
+
+  return (
+    <div className={cn('grid flex-grow grid-cols-7', className)}>
+      {daysForLocale(locale, startDay).map((day) => (
+        <div key={day} className="p-3 text-right text-muted-foreground text-xs">
+          {day}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const CalendarItem = ({ training, className }) => (
+  <div className={cn('flex items-center gap-2', className)} key={training.id}>
+    <div
+      className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green"
+    />
+    <span className="truncate">{training.title}</span>
+  </div>
+);
+
+const CalendarBody = ({ trainings, onDateClick, selectedDate }) => {
+  const { month, year } = useCalendar();
+  const { startDay } = useContext(CalendarContext);
+  const daysInMonth = getDaysInMonth(new Date(year, month, 1));
+  const firstDay = (getDay(new Date(year, month, 1)) - startDay + 7) % 7;
+  const days = [];
+
+  const prevMonth = month === 0 ? 11 : month - 1;
+  const prevMonthYear = month === 0 ? year - 1 : year;
+  const prevMonthDays = getDaysInMonth(new Date(prevMonthYear, prevMonth, 1));
+  const prevMonthDaysArray = Array.from(
+    { length: prevMonthDays },
+    (_, i) => i + 1
+  );
+
+  // Previous month days
+  for (let i = 0; i < firstDay; i++) {
+    const day = prevMonthDaysArray[prevMonthDays - firstDay + i];
+    if (day) {
+      days.push(<OutOfBoundsDay key={`prev-${i}`} day={day} />);
+    }
+  }
+
+  // Current month days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const currentDate = new Date(year, month, day);
+    const trainingsForDay = trainings.filter(training => {
+      try {
+        const trainingDate = parseISO(training.date);
+        return isValid(trainingDate) && isSameDay(trainingDate, currentDate);
+      } catch (error) {
+        console.error("Error comparing dates:", error);
+        return false;
+      }
+    });
+
+    const isSelected = selectedDate && isSameDay(selectedDate, currentDate);
+
+    days.push(
+      <div
+        key={day}
+        className={cn(
+          "relative flex h-full w-full flex-col gap-1 p-1 text-muted-foreground text-xs cursor-pointer hover:bg-muted/20",
+          isSelected && "bg-muted/30"
+        )}
+        onClick={() => onDateClick(currentDate)}
+      >
+        {day}
+        <div>
+          {trainingsForDay.slice(0, 3).map((training) => (
+            <CalendarItem key={training.id} training={training} />
+          ))}
+        </div>
+        {trainingsForDay.length > 3 && (
+          <span className="block text-muted-foreground text-xs">
+            +{trainingsForDay.length - 3} more
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Next month days
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const nextMonthYear = month === 11 ? year + 1 : year;
+  const nextMonthDays = getDaysInMonth(new Date(nextMonthYear, nextMonth, 1));
+  const nextMonthDaysArray = Array.from(
+    { length: nextMonthDays },
+    (_, i) => i + 1
+  );
+
+  const remainingDays = 7 - ((firstDay + daysInMonth) % 7);
+  if (remainingDays < 7) {
+    for (let i = 0; i < remainingDays; i++) {
+      const day = nextMonthDaysArray[i];
+      if (day) {
+        days.push(<OutOfBoundsDay key={`next-${i}`} day={day} />);
+      }
+    }
+  }
+
+  return (
+    <div className="grid flex-grow grid-cols-7">
+      {days.map((day, index) => (
+        <div
+          key={index}
+          className={cn(
+            'relative aspect-square overflow-hidden border-t border-r',
+            index % 7 === 6 && 'border-r-0'
+          )}
+        >
+          {day}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const CalendarProvider = ({ locale = 'en-US', startDay = 0, children, className }) => (
+  <CalendarContext.Provider value={{ locale, startDay }}>
+    <div className={cn('relative flex flex-col', className)}>{children}</div>
+  </CalendarContext.Provider>
+);
+
+// Main Schedule component
 const Schedule = () => {
   const [date, setDate] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [trainings, setTrainings] = useState([]);
   const [selectedTraining, setSelectedTraining] = useState(null);
   const { toast } = useToast();
 
-  const handlePreviousMonth = () => {
-    setCurrentMonth(prev => subMonths(prev, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, 1));
-  };
-
   const handleDateSelect = (selectedDate) => {
     setDate(selectedDate);
     const trainingOnDate = trainings.find(training => {
-      // Ensure we're comparing valid dates
-      const trainingDate = parseISO(training.date);
-      return isValid(trainingDate) && isSameDay(trainingDate, selectedDate);
+      try {
+        // Safely parse the training date string to a Date object
+        const trainingDate = parseISO(training.date);
+        // Check if the parsed date is valid and matches the selected date
+        return isValid(trainingDate) && isSameDay(trainingDate, selectedDate);
+      } catch (error) {
+        console.error("Error comparing dates:", error);
+        return false;
+      }
     });
     setSelectedTraining(trainingOnDate);
   };
@@ -67,53 +370,6 @@ const Schedule = () => {
       title: "Training Added",
       description: `${title} has been added to your schedule.`,
     });
-  };
-
-  // Generate calendar day contents with training indicators
-  const getDayContents = (day) => {
-    if (!isValid(day)) {
-      return <div>Invalid Date</div>;
-    }
-    
-    const trainingOnDay = trainings.find(training => {
-      try {
-        // Safely parse the training date string to a Date object
-        const trainingDate = parseISO(training.date);
-        // Check if the parsed date is valid
-        return isValid(trainingDate) && isSameDay(trainingDate, day);
-      } catch (error) {
-        console.error("Error comparing dates:", error);
-        return false;
-      }
-    });
-    
-    if (trainingOnDay) {
-      return (
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <div className="w-full h-full flex items-center justify-center relative">
-              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-vibrant-green rounded-full"></div>
-              {format(day, "d")}
-            </div>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80 z-50 bg-white">
-            <div className="flex flex-col gap-2">
-              <h4 className="font-semibold">{trainingOnDay.title}</h4>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{trainingOnDay.time}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{trainingOnDay.location}</span>
-              </div>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    }
-    
-    return <div>{format(day, "d")}</div>;
   };
 
   return (
@@ -180,40 +436,27 @@ const Schedule = () => {
       
       {/* Calendar Section - First Half of the page */}
       <Card className="bg-white shadow-sm border-0 mb-6">
-        <CardHeader className="border-b pb-3 flex flex-row items-center justify-between">
+        <CardHeader className="border-b pb-3">
           <CardTitle className="text-xl font-semibold">
-            {format(currentMonth, "MMMM yyyy")}
+            Training Calendar
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handlePreviousMonth}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button 
-              onClick={handleNextMonth}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleDateSelect}
-            month={currentMonth}
-            className="w-full"
-            showOutsideDays={true}
-            fixedWeeks={true}
-            components={{
-              Day: ({ day }) => getDayContents(day)
-            }}
-          />
+          <CalendarProvider>
+            <CalendarDate>
+              <CalendarDatePicker>
+                <CalendarMonthPicker />
+                <CalendarYearPicker start={2020} end={2030} />
+              </CalendarDatePicker>
+              <CalendarDatePagination />
+            </CalendarDate>
+            <CalendarHeader />
+            <CalendarBody 
+              trainings={trainings} 
+              onDateClick={handleDateSelect} 
+              selectedDate={date}
+            />
+          </CalendarProvider>
         </CardContent>
       </Card>
       

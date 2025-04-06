@@ -1,53 +1,42 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 180 30% 98%; /* Lighter background */
-    --foreground: 216 33% 10%; /* Oxford Blue text */
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 216 33% 10%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 216 33% 10%;
-
-    --primary: 216 75% 20%; /* Lighter Oxford Blue */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 106 31% 85%; /* Lighter Tea Green */
-    --secondary-foreground: 216 33% 10%;
-
-    --muted: 155 15% 95%;
-    --muted-foreground: 215 14% 34%; /* Charcoal */
-
-    --accent: 170 24% 70%; /* Lighter Cambridge Blue */
-    --accent-foreground: 216 33% 10%;
-
-    --destructive: 0 62% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 145 63% 55%;
-    --success-foreground: 0 0% 100%;
-
-    --border: 106 31% 80%; /* Lighter Tea Green */
-    --input: 106 31% 80%;
-    --ring: 170 24% 70%; /* Lighter Cambridge Blue */
-
-    --radius: 0.75rem; /* Slightly larger radius for softer feel */
-
-    --sidebar-background: 216 75% 15%; /* Lighter Oxford Blue */
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 170 24% 70%; /* Lighter Cambridge Blue */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 14% 45%; /* Lighter Charcoal */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 215 14% 45%; /* Lighter Charcoal */
-    --sidebar-ring: 170 24% 70%; /* Lighter Cambridge Blue */
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 180 5.9% 72.9%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 164.6 53.8% 67.5%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+    
+    /* Sidebar Colors */
+    --sidebar-background: 0 0% 18%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-muted: 0 0% 40%;
+    --sidebar-muted-foreground: 0 0% 80%;
+    --sidebar-primary: 164.6 53.8% 67.5%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 120 100% 95%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 210 40% 98%;
   }
 }
 
@@ -55,261 +44,67 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-gradient-to-br from-white via-tea-green/10 to-cambridge-blue/10 text-foreground font-open-sans min-h-screen;
+    @apply bg-background text-foreground;
   }
-
-  h1, h2, h3 {
-    @apply font-montserrat font-semibold;
+  
+  /* Page title styles */
+  .page-title {
+    @apply text-3xl font-bold font-montserrat text-oxford-blue tracking-tight;
   }
-
-  h4, h5, h6 {
-    @apply font-raleway font-semibold;
+  
+  /* Glass effects */
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-sm border border-muted shadow-sm;
   }
-
-  /* Remove the circular dependency */
-  /* .font-poppins {
-    @apply font-poppins;
-  } */
-}
-
-.stat-card {
-  @apply p-6 rounded-lg bg-white shadow-md transition-all duration-300 ease-in-out backdrop-blur-sm border border-secondary;
-}
-
-.stat-card:hover {
-  @apply shadow-lg border-primary/50 transform -translate-y-1;
-}
-
-.progress-bar {
-  @apply h-2 bg-secondary rounded-full overflow-hidden;
-}
-
-.progress-bar-value {
-  @apply h-full rounded-full transition-all duration-300 ease-in-out;
-}
-
-.document-card {
-  @apply p-4 border border-secondary rounded-lg transition-all duration-300 ease-in-out bg-white shadow-sm;
-}
-
-.document-card:hover {
-  @apply shadow-md border-accent/30;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  @apply w-2;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-secondary/50 rounded-full;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-cambridge-blue/60 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-oxford-blue/60;
-}
-
-/* File upload zone */
-.upload-zone {
-  @apply border-2 border-dashed border-border rounded-lg p-8 text-center transition-all duration-300 ease-in-out bg-white/80;
-}
-
-.upload-zone-active {
-  @apply border-primary bg-primary/10;
-}
-
-/* Calendar */
-.calendar-day {
-  @apply aspect-square flex items-center justify-center rounded-md hover:bg-secondary transition-colors p-2 relative;
-}
-
-.calendar-day-active {
-  @apply bg-primary/10 font-medium;
-}
-
-.calendar-event {
-  @apply px-2 py-1 rounded-md text-xs font-medium truncate;
-}
-
-.calendar-event.fire {
-  @apply bg-[#FF7F00]/20 text-[#FF7F00];
-}
-
-.calendar-event.road {
-  @apply bg-oxford-blue/20 text-oxford-blue;
-}
-
-.calendar-event.industrial {
-  @apply bg-cambridge-blue/20 text-cambridge-blue;
-}
-
-/* Training profiles */
-.trainer-avatar {
-  @apply w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm;
-}
-
-.trainer-avatar-stack {
-  @apply flex -space-x-4;
-}
-
-/* Custom animations */
-.animate-enter {
-  animation: fadeInUp 0.5s forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  
+  .glass-card-accent {
+    @apply bg-gradient-to-br from-white/90 to-cambridge-blue/10 backdrop-blur-sm border border-cambridge-blue/30 shadow-sm hover:shadow-md transition-shadow;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .glass-card-success {
+    @apply bg-gradient-to-br from-white/90 to-olivine/10 backdrop-blur-sm border border-olivine/30 shadow-sm hover:shadow-md transition-shadow;
   }
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  background-position: 0% 0%;
-  animation: gradientAnimation 5s ease infinite;
-}
-
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
+  
+  .glass-button {
+    @apply bg-white/80 backdrop-blur-sm hover:bg-white;
   }
-  50% {
-    background-position: 100% 50%;
+  
+  /* Calendar styles */
+  .calendar-day {
+    @apply border border-border/20 min-h-24 cursor-pointer;
   }
-  100% {
-    background-position: 0% 50%;
+  
+  .calendar-day-active {
+    @apply bg-olivine/10;
   }
-}
-
-/* New color palette gradients */
-.gradient-oxford {
-  background: linear-gradient(135deg, #011936 0%, #01254A 100%);
-}
-
-.gradient-charcoal {
-  background: linear-gradient(135deg, #465362 0%, #596778 100%);
-}
-
-.gradient-cambridge {
-  background: linear-gradient(135deg, #82A3A1 0%, #9EBDBB 100%);
-}
-
-.gradient-olivine {
-  background: linear-gradient(135deg, #9FC490 0%, #B5D4A8 100%);
-}
-
-.gradient-tea {
-  background: linear-gradient(135deg, #C0DFA1 0%, #D5EAB9 100%);
-}
-
-/* Combined gradients */
-.gradient-oxford-charcoal {
-  background: linear-gradient(135deg, #011936 0%, #465362 100%);
-}
-
-.gradient-cambridge-olivine {
-  background: linear-gradient(135deg, #82A3A1 0%, #9FC490 100%);
-}
-
-.gradient-olivine-tea {
-  background: linear-gradient(135deg, #9FC490 0%, #C0DFA1 100%);
-}
-
-/* Elegant card styles */
-.elegant-card {
-  @apply bg-white border border-olivine/20 shadow-sm rounded-xl overflow-hidden;
-}
-
-.elegant-card:hover {
-  @apply border-cambridge-blue/30 shadow-md;
-}
-
-/* Elegant button styles */
-.btn-elegant {
-  @apply relative overflow-hidden transition-all duration-300 bg-oxford-blue hover:bg-charcoal text-white rounded-md px-6 py-2.5;
-}
-
-.btn-elegant:before {
-  @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/10 transform -skew-x-12 -translate-x-full transition-transform duration-700;
-}
-
-.btn-elegant:hover:before {
-  @apply translate-x-[110%];
-}
-
-/* Enhanced Glassmorphism styles */
-.glass-panel {
-  @apply bg-white/40 backdrop-blur-xl border border-white/30 shadow-lg rounded-xl;
-}
-
-.glass-panel-darker {
-  @apply bg-white/30 backdrop-blur-xl border border-white/20 shadow-lg rounded-xl;
-}
-
-.glass-card {
-  @apply bg-white/60 backdrop-blur-md border border-cambridge-blue/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
-}
-
-.glass-card-accent {
-  @apply bg-white/60 backdrop-blur-md border-l-4 border-l-cambridge-blue border border-cambridge-blue/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
-}
-
-.glass-card-success {
-  @apply bg-white/60 backdrop-blur-md border-l-4 border-l-success-green border border-success-green/20 shadow-md rounded-xl overflow-hidden transition-all hover:shadow-lg hover:bg-white/70;
-}
-
-.glass-button {
-  @apply bg-white/60 backdrop-blur-md border border-cambridge-blue/30 text-oxford-blue shadow-sm hover:bg-white/80 hover:border-cambridge-blue/50 hover:shadow-md transition-all;
-}
-
-/* Document hover card styles */
-.document-hover-card {
-  @apply p-4 bg-white/70 backdrop-blur-md border border-cambridge-blue/30 rounded-lg shadow-md transition-all;
-}
-
-/* Creative text styles */
-.text-gradient-primary {
-  @apply bg-gradient-to-r from-oxford-blue to-cambridge-blue bg-clip-text text-transparent;
-}
-
-.text-gradient-success {
-  @apply bg-gradient-to-r from-success-green to-light-green bg-clip-text text-transparent;
-}
-
-/* Enhanced button styles */
-.btn-creative {
-  @apply relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-cambridge-blue to-tea-green text-oxford-blue font-medium rounded-lg px-6 py-3 shadow-md hover:shadow-lg;
-}
-
-.btn-creative::before {
-  @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full transition-transform duration-700;
-}
-
-.btn-creative:hover::before {
-  @apply translate-x-[110%];
-}
-
-/* Enhance page headers */
-.page-title {
-  @apply text-3xl font-bold font-montserrat text-gradient-primary tracking-tight;
-}
-
-.page-subtitle {
-  @apply text-charcoal font-raleway;
-}
-
-/* Avatar enhancements */
-.avatar-gradient {
-  @apply bg-gradient-to-br from-oxford-blue to-cambridge-blue text-white;
+  
+  .calendar-event {
+    @apply text-xs px-2 py-0.5 rounded-sm truncate font-medium cursor-pointer;
+  }
+  
+  .calendar-event.fire {
+    @apply bg-chart-orange/20 text-chart-orange;
+  }
+  
+  .calendar-event.road {
+    @apply bg-oxford-blue/20 text-oxford-blue;
+  }
+  
+  .calendar-event.industrial {
+    @apply bg-charcoal/20 text-charcoal;
+  }
+  
+  .calendar-event.first-aid {
+    @apply bg-vibrant-green/20 text-vibrant-green;
+  }
+  
+  .calendar-event.hazmat {
+    @apply bg-chart-purple/20 text-chart-purple;
+  }
+  
+  /* Avatar gradient */
+  .avatar-gradient {
+    @apply bg-gradient-to-br from-cambridge-blue to-tea-green text-white font-semibold;
+  }
 }

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { create } from "zustand";
 import { getDay, getDaysInMonth, isSameDay, format, parseISO, isValid, addMonths, subMonths } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Calendar state management with zustand
 const useCalendar = create((set) => ({
@@ -102,7 +103,7 @@ const Combobox = ({ value, setValue, data, labels, className }) => {
 
 // Out of bounds day component
 const OutOfBoundsDay = ({ day }) => (
-  <div className="relative h-full w-full bg-secondary p-1 text-muted-foreground text-xs">
+  <div className="p-1 text-muted-foreground text-xs">
     {day}
   </div>
 );
@@ -196,9 +197,9 @@ const CalendarHeader = ({ className }) => {
   const { locale, startDay } = useContext(CalendarContext);
 
   return (
-    <div className={cn('grid flex-grow grid-cols-7', className)}>
+    <div className={cn('grid grid-cols-7', className)}>
       {daysForLocale(locale, startDay).map((day) => (
-        <div key={day} className="p-3 text-right text-muted-foreground text-xs">
+        <div key={day} className="p-3 text-center text-muted-foreground text-xs font-medium">
           {day}
         </div>
       ))}
@@ -207,12 +208,20 @@ const CalendarHeader = ({ className }) => {
 };
 
 const CalendarItem = ({ training, className }) => (
-  <div className={cn('flex items-center gap-2', className)} key={training.id}>
-    <div
-      className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green"
-    />
-    <span className="truncate">{training.title}</span>
-  </div>
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={cn('flex items-center gap-2 cursor-pointer', className)} key={training.id}>
+          <div className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green" />
+          <span className="truncate text-xs">{training.title}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p className="font-medium">{training.title}</p>
+        <p className="text-xs">{training.time}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 );
 
 const CalendarBody = ({ trainings, onDateClick, selectedDate }) => {
@@ -225,17 +234,11 @@ const CalendarBody = ({ trainings, onDateClick, selectedDate }) => {
   const prevMonth = month === 0 ? 11 : month - 1;
   const prevMonthYear = month === 0 ? year - 1 : year;
   const prevMonthDays = getDaysInMonth(new Date(prevMonthYear, prevMonth, 1));
-  const prevMonthDaysArray = Array.from(
-    { length: prevMonthDays },
-    (_, i) => i + 1
-  );
 
   // Previous month days
   for (let i = 0; i < firstDay; i++) {
-    const day = prevMonthDaysArray[prevMonthDays - firstDay + i];
-    if (day) {
-      days.push(<OutOfBoundsDay key={`prev-${i}`} day={day} />);
-    }
+    const day = prevMonthDays - firstDay + i + 1;
+    days.push(<OutOfBoundsDay key={`prev-${i}`} day={day} />);
   }
 
   // Current month days
@@ -255,67 +258,45 @@ const CalendarBody = ({ trainings, onDateClick, selectedDate }) => {
 
     days.push(
       <div
-        key={day}
+        key={`current-${day}`}
         className={cn(
-          "relative flex h-full w-full flex-col gap-1 p-1 text-muted-foreground text-xs cursor-pointer hover:bg-muted/20",
-          isSelected && "bg-muted/30"
+          "min-h-24 p-1 border border-border/20 hover:bg-muted/10 transition-colors",
+          isSelected && "bg-muted/20"
         )}
         onClick={() => onDateClick(currentDate)}
       >
-        {day}
-        <div>
+        <div className="text-xs mb-1">{day}</div>
+        <div className="space-y-1">
           {trainingsForDay.slice(0, 3).map((training) => (
             <CalendarItem key={training.id} training={training} />
           ))}
+          {trainingsForDay.length > 3 && (
+            <span className="block text-muted-foreground text-xs mt-1">
+              +{trainingsForDay.length - 3} more
+            </span>
+          )}
         </div>
-        {trainingsForDay.length > 3 && (
-          <span className="block text-muted-foreground text-xs">
-            +{trainingsForDay.length - 3} more
-          </span>
-        )}
       </div>
     );
   }
 
   // Next month days
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextMonthYear = month === 11 ? year + 1 : year;
-  const nextMonthDays = getDaysInMonth(new Date(nextMonthYear, nextMonth, 1));
-  const nextMonthDaysArray = Array.from(
-    { length: nextMonthDays },
-    (_, i) => i + 1
-  );
-
-  const remainingDays = 7 - ((firstDay + daysInMonth) % 7);
-  if (remainingDays < 7) {
-    for (let i = 0; i < remainingDays; i++) {
-      const day = nextMonthDaysArray[i];
-      if (day) {
-        days.push(<OutOfBoundsDay key={`next-${i}`} day={day} />);
-      }
-    }
+  const nextMonthDaysNeeded = 42 - (firstDay + daysInMonth); // Always show 6 weeks (42 days)
+  
+  for (let i = 1; i <= nextMonthDaysNeeded; i++) {
+    days.push(<OutOfBoundsDay key={`next-${i}`} day={i} />);
   }
 
   return (
-    <div className="grid flex-grow grid-cols-7">
-      {days.map((day, index) => (
-        <div
-          key={index}
-          className={cn(
-            'relative aspect-square overflow-hidden border-t border-r',
-            index % 7 === 6 && 'border-r-0'
-          )}
-        >
-          {day}
-        </div>
-      ))}
+    <div className="grid grid-cols-7 auto-rows-fr">
+      {days}
     </div>
   );
 };
 
 const CalendarProvider = ({ locale = 'en-US', startDay = 0, children, className }) => (
   <CalendarContext.Provider value={{ locale, startDay }}>
-    <div className={cn('relative flex flex-col', className)}>{children}</div>
+    <div className={cn('flex flex-col', className)}>{children}</div>
   </CalendarContext.Provider>
 );
 

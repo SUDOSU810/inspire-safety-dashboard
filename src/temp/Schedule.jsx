@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Users, Calendar as CalendarIcon, Plus } from "lucide-react";
-import { format, addMonths, subMonths, isSameDay } from "date-fns";
+import { format, addMonths, subMonths, isSameDay, isValid, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -32,9 +32,11 @@ const Schedule = () => {
 
   const handleDateSelect = (selectedDate) => {
     setDate(selectedDate);
-    const trainingOnDate = trainings.find(training => 
-      isSameDay(new Date(training.date), selectedDate)
-    );
+    const trainingOnDate = trainings.find(training => {
+      // Ensure we're comparing valid dates
+      const trainingDate = parseISO(training.date);
+      return isValid(trainingDate) && isSameDay(trainingDate, selectedDate);
+    });
     setSelectedTraining(trainingOnDate);
   };
 
@@ -69,9 +71,21 @@ const Schedule = () => {
 
   // Generate calendar day contents with training indicators
   const getDayContents = (day) => {
-    const trainingOnDay = trainings.find(training => 
-      isSameDay(new Date(training.date), day)
-    );
+    if (!isValid(day)) {
+      return <div>Invalid Date</div>;
+    }
+    
+    const trainingOnDay = trainings.find(training => {
+      try {
+        // Safely parse the training date string to a Date object
+        const trainingDate = parseISO(training.date);
+        // Check if the parsed date is valid
+        return isValid(trainingDate) && isSameDay(trainingDate, day);
+      } catch (error) {
+        console.error("Error comparing dates:", error);
+        return false;
+      }
+    });
     
     if (trainingOnDay) {
       return (

@@ -207,22 +207,15 @@ const CalendarHeader = ({ className }) => {
   );
 };
 
-const CalendarItem = ({ training, className }) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className={cn('flex items-center gap-2 cursor-pointer', className)} key={training.id}>
-          <div className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green" />
-          <span className="truncate text-xs">{training.title}</span>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="font-medium">{training.title}</p>
-        <p className="text-xs">{training.time}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
+// CalendarItem component with proper tooltip usage
+const CalendarItem = ({ training, className }) => {
+  return (
+    <div className={cn('flex items-center gap-2 cursor-pointer', className)} key={training.id}>
+      <div className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green" />
+      <span className="truncate text-xs">{training.title}</span>
+    </div>
+  );
+};
 
 const CalendarBody = ({ trainings, onDateClick, selectedDate }) => {
   const { month, year } = useCalendar();
@@ -352,6 +345,24 @@ const Schedule = () => {
       description: `${title} has been added to your schedule.`,
     });
   };
+
+  // Safely rendering tooltip components
+  const renderCalendarItem = (training) => (
+    <TooltipProvider key={training.id}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2 cursor-pointer" key={training.id}>
+            <div className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green" />
+            <span className="truncate text-xs">{training.title}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-medium">{training.title}</p>
+          <p className="text-xs">{training.time}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 
   return (
     <DashboardLayout>

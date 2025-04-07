@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type NavItemProps = {
   to: string;
@@ -66,6 +67,7 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const currentPath = location.pathname;
+  const [user, setUser] = useState<any>(null);
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -73,6 +75,27 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
     if (savedState !== null) {
       setSidebarOpen(savedState === 'true');
     }
+    
+    // Fetch user data
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUser(data.session.user);
+      }
+    };
+    
+    fetchUser();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_, session) => {
+        setUser(session?.user || null);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const toggleSidebar = () => {
@@ -89,7 +112,8 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
@@ -161,13 +185,17 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
             <Avatar className="border border-tea-green/20 h-10 w-10 shadow-sm">
               <AvatarImage src="/placeholder.svg" />
               <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white font-poppins">
-                AD
+                {user ? (user.email?.substring(0, 2).toUpperCase() || "UN") : "UN"}
               </AvatarFallback>
             </Avatar>
             {sidebarOpen && (
               <div>
-                <p className="text-white text-sm font-medium font-poppins">Admin User</p>
-                <p className="text-tea-green/70 text-xs font-open-sans">admin@inspiresafety.org</p>
+                <p className="text-white text-sm font-medium font-poppins">
+                  {user ? (user.user_metadata?.name || user.email?.split('@')[0] || "User") : "User"}
+                </p>
+                <p className="text-tea-green/70 text-xs font-open-sans">
+                  {user ? user.email : "user@example.com"}
+                </p>
               </div>
             )}
           </div>
@@ -228,10 +256,12 @@ const DashboardLayout = ({ children }: MainLayoutProps) => {
                   <Avatar className="h-8 w-8 border border-cambridge-blue/30">
                     <AvatarImage src="/placeholder.svg" />
                     <AvatarFallback className="bg-gradient-to-br from-success-green to-vibrant-green text-white font-poppins">
-                      AD
+                      {user ? (user.email?.substring(0, 2).toUpperCase() || "UN") : "UN"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-sm text-oxford-blue font-poppins">Admin</span>
+                  <span className="font-medium text-sm text-oxford-blue font-poppins">
+                    {user ? (user.user_metadata?.name || user.email?.split('@')[0] || "User") : "User"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="border-cambridge-blue/30 glass-panel">

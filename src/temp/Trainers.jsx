@@ -1,5 +1,6 @@
 
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,16 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { 
   Grid, 
   List, 
@@ -29,6 +40,7 @@ import {
   Star,
   Info
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const trainers = [
   { 
@@ -144,6 +156,48 @@ const getStatusColor = status => {
 };
 
 const Trainers = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [addTrainerOpen, setAddTrainerOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [newTrainer, setNewTrainer] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    specialty: "Fire Safety",
+    status: "active"
+  });
+
+  const handleNewTrainerChange = (e) => {
+    const { name, value } = e.target;
+    setNewTrainer(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddTrainer = (e) => {
+    e.preventDefault();
+    // In a real app, this would add the trainer to the database
+    // For now, we'll just show a toast
+    toast({
+      title: "Trainer Added",
+      description: `${newTrainer.name} has been added as a trainer.`,
+    });
+    setAddTrainerOpen(false);
+    setNewTrainer({
+      name: "",
+      email: "",
+      phone: "",
+      specialty: "Fire Safety",
+      status: "active"
+    });
+  };
+
+  const handleViewProfile = (trainerId) => {
+    navigate(`/trainers/${trainerId}`);
+  };
+
   return (
     <DashboardLayout>
       <CardHeader>
@@ -156,7 +210,13 @@ const Trainers = () => {
       <div className="flex items-center justify-between space-x-2 mb-4">
         <div className="flex items-center relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder="Search trainers..." className="pl-8 w-[300px]" />
+          <Input 
+            type="search" 
+            placeholder="Search trainers..." 
+            className="pl-8 w-[300px]"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -169,16 +229,93 @@ const Trainers = () => {
             </Button>
           </div>
 
-          <Button size="sm">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Trainer
-          </Button>
+          <Dialog open={addTrainerOpen} onOpenChange={setAddTrainerOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Trainer
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Trainer</DialogTitle>
+                <DialogDescription>
+                  Fill in the details to add a new safety trainer to the system.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddTrainer}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={newTrainer.name}
+                      onChange={handleNewTrainerChange}
+                      className="col-span-3"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="email" className="text-right">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={newTrainer.email}
+                      onChange={handleNewTrainerChange}
+                      className="col-span-3"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="phone" className="text-right">
+                      Phone
+                    </Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={newTrainer.phone}
+                      onChange={handleNewTrainerChange}
+                      className="col-span-3"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="specialty" className="text-right">
+                      Specialty
+                    </Label>
+                    <select
+                      id="specialty"
+                      name="specialty"
+                      value={newTrainer.specialty}
+                      onChange={handleNewTrainerChange}
+                      className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="Fire Safety">Fire Safety</option>
+                      <option value="Road Safety">Road Safety</option>
+                      <option value="Industrial Safety">Industrial Safety</option>
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Add Trainer</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {trainers.map((trainer) => (
-          <Card key={trainer.id}>
+        {trainers
+          .filter(trainer => search ? trainer.name.toLowerCase().includes(search.toLowerCase()) : true)
+          .map((trainer) => (
+          <Card key={trainer.id} className="relative">
             <CardContent className="p-4">
               <div className="flex justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -218,7 +355,11 @@ const Trainers = () => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => handleViewProfile(trainer.id)}
+                >
                   Profile
                 </Button>
                 <Button variant="outline" className="w-full">
@@ -233,7 +374,7 @@ const Trainers = () => {
                   <Info className="h-4 w-4" />
                 </Button>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80">
+              <HoverCardContent className="w-80" align="end">
                 <div className="flex space-x-4">
                   <Avatar>
                     <AvatarImage src={trainer.avatar} />
@@ -270,10 +411,8 @@ const Trainers = () => {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <Button size="sm" className="w-full">
-                    <Link to={`/trainers/${trainer.id}`}>
-                      View Full Profile
-                    </Link>
+                  <Button size="sm" className="w-full" onClick={() => handleViewProfile(trainer.id)}>
+                    View Full Profile
                   </Button>
                 </div>
               </HoverCardContent>

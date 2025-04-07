@@ -353,8 +353,10 @@ const Schedule = () => {
                                 mode="single"
                                 selected={field.value}
                                 onSelect={(date) => {
-                                  field.onChange(date);
-                                  setSelectedDate(date);
+                                  if (date) {
+                                    field.onChange(date);
+                                    setSelectedDate(date);
+                                  }
                                 }}
                                 initialFocus
                                 className="pointer-events-auto"
@@ -563,7 +565,7 @@ const Schedule = () => {
                     } ${
                       isSameDay(day, new Date()) ? 'calendar-day-active' : ''
                     } ${
-                      isSameDay(day, selectedDate || new Date()) ? 'bg-tea-green/30 font-medium' : ''
+                      selectedDate && isSameDay(day, selectedDate) ? 'bg-tea-green/30 font-medium' : ''
                     }`}
                     onClick={() => {
                       setSelectedDate(day);
@@ -578,7 +580,7 @@ const Schedule = () => {
                         {dayEvents.slice(0, 2).map((event, idx) => (
                           <div 
                             key={idx} 
-                            className={`calendar-event ${event.category}`}
+                            className={`calendar-event ${event.category || 'default'}`}
                             title={`${event.title} - ${event.time}`}
                           >
                             {event.title.length > 10 ? event.title.substring(0, 10) + '...' : event.title}

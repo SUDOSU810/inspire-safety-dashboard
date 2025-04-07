@@ -11,26 +11,8 @@ import {
   CalendarHeader,
   CalendarBody
 } from "./calendar-components";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Calendar = ({ trainings, onDateClick, selectedDate }) => {
-  const renderCalendarItem = (training) => (
-    <TooltipProvider key={training.id}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-2 cursor-pointer" key={training.id}>
-            <div className="h-2 w-2 shrink-0 rounded-full bg-vibrant-green" />
-            <span className="truncate text-xs">{training.title}</span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="font-medium">{training.title}</p>
-          <p className="text-xs">{training.time}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-
   return (
     <Card className="bg-white shadow-sm border-0 mb-6">
       <CardHeader className="border-b pb-3">

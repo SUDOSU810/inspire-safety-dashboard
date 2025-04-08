@@ -195,7 +195,7 @@ const Trainers = () => {
   };
 
   const handleViewProfile = (trainerId) => {
-    navigate(`/trainers/${trainerId}`);
+    navigate(`/trainer/${trainerId}`);
   };
 
   return (

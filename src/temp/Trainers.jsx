@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,93 +41,7 @@ import {
   Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const trainers = [
-  { 
-    id: "t1", 
-    name: "Raj Kumar", 
-    specialty: "Fire Safety", 
-    initials: "RK", 
-    trainings: 32,
-    rating: 4.8,
-    email: "raj.kumar@email.com",
-    phone: "+91 9876543210",
-    status: "active",
-    certifications: ["Fire Safety Expert", "Hazard Management"],
-    avatar: "/avatars/raj-kumar.jpg",
-    bio: "10+ years of experience in fire safety training. Expert in evacuation procedures and fire prevention techniques."
-  },
-  { 
-    id: "t2", 
-    name: "Priya Singh", 
-    specialty: "Road Safety", 
-    initials: "PS", 
-    trainings: 28,
-    rating: 4.7,
-    email: "priya.singh@email.com",
-    phone: "+91 9876543211",
-    status: "active",
-    certifications: ["Traffic Safety Specialist", "Driver Education"],
-    avatar: "/avatars/priya-singh.jpg",
-    bio: "Former traffic police officer with specialized knowledge in road safety protocols and defensive driving techniques."
-  },
-  { 
-    id: "t3", 
-    name: "Vikram Mehta", 
-    specialty: "Industrial Safety", 
-    initials: "VM", 
-    trainings: 45,
-    rating: 4.9,
-    email: "vikram.mehta@email.com",
-    phone: "+91 9876543212",
-    status: "vacation",
-    certifications: ["Industrial Safety Expert", "Machine Operation Safety"],
-    avatar: "/avatars/vikram-mehta.jpg",
-    bio: "Industrial engineering background with extensive experience in factory safety procedures and risk assessment."
-  },
-  { 
-    id: "t4", 
-    name: "Sunita Patel", 
-    specialty: "Fire Safety", 
-    initials: "SP", 
-    trainings: 37,
-    rating: 4.6,
-    email: "sunita.patel@email.com",
-    phone: "+91 9876543213",
-    status: "active",
-    certifications: ["Fire Emergency Response", "Evacuation Planning"],
-    avatar: "/avatars/sunita-patel.jpg",
-    bio: "Specializes in emergency response planning and evacuation strategies for commercial buildings."
-  },
-  { 
-    id: "t5", 
-    name: "Karthik Nair", 
-    specialty: "Industrial Safety", 
-    initials: "KN", 
-    trainings: 39,
-    rating: 4.7,
-    email: "karthik.nair@email.com",
-    phone: "+91 9876543214",
-    status: "active",
-    certifications: ["Chemical Safety", "PPE Specialist"],
-    avatar: "/avatars/karthik-nair.jpg",
-    bio: "Chemical engineer focused on hazardous materials handling and personal protective equipment training."
-  },
-  { 
-    id: "t6", 
-    name: "Ananya Desai", 
-    specialty: "Road Safety", 
-    initials: "AD", 
-    trainings: 22,
-    rating: 4.5,
-    email: "ananya.desai@email.com",
-    phone: "+91 9876543215",
-    status: "inactive",
-    certifications: ["Traffic Management", "Pedestrian Safety"],
-    avatar: "/avatars/ananya-desai.jpg",
-    bio: "Focuses on pedestrian safety and traffic management during public events and in school zones."
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const getSpecialtyColor = specialty => {
   switch (specialty) {
@@ -160,38 +74,117 @@ const Trainers = () => {
   const navigate = useNavigate();
   const [addTrainerOpen, setAddTrainerOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [trainers, setTrainers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newTrainer, setNewTrainer] = useState({
     name: "",
     email: "",
     phone: "",
     specialty: "Fire Safety",
-    status: "active"
+    status: "active",
+    bio: "",
+    initials: ""
   });
+
+  useEffect(() => {
+    fetchTrainers();
+  }, []);
+
+  const fetchTrainers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('trainers')
+        .select('*');
+        
+      if (error) {
+        throw error;
+      }
+      
+      setTrainers(data || []);
+    } catch (error) {
+      console.error('Error fetching trainers:', error);
+      toast({
+        title: "Error fetching trainers",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNewTrainerChange = (e) => {
     const { name, value } = e.target;
+    
+    let updates = {
+      [name]: value
+    };
+    
+    // Auto-generate initials when name changes
+    if (name === 'name') {
+      const nameParts = value.split(' ');
+      const initials = nameParts.map(part => part.charAt(0).toUpperCase()).join('');
+      updates.initials = initials.slice(0, 2); // Limit to 2 characters
+    }
+    
     setNewTrainer(prev => ({
       ...prev,
-      [name]: value
+      ...updates
     }));
   };
 
-  const handleAddTrainer = (e) => {
+  const handleAddTrainer = async (e) => {
     e.preventDefault();
-    // In a real app, this would add the trainer to the database
-    // For now, we'll just show a toast
-    toast({
-      title: "Trainer Added",
-      description: `${newTrainer.name} has been added as a trainer.`,
-    });
-    setAddTrainerOpen(false);
-    setNewTrainer({
-      name: "",
-      email: "",
-      phone: "",
-      specialty: "Fire Safety",
-      status: "active"
-    });
+    
+    try {
+      const { data, error } = await supabase
+        .from('trainers')
+        .insert([{
+          name: newTrainer.name,
+          email: newTrainer.email,
+          phone: newTrainer.phone,
+          specialty: newTrainer.specialty,
+          status: newTrainer.status,
+          bio: newTrainer.bio || `New trainer specializing in ${newTrainer.specialty}`,
+          initials: newTrainer.initials,
+          trainings: 0,
+          rating: 0.0,
+          certifications: []
+        }])
+        .select();
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Trainer Added",
+        description: `${newTrainer.name} has been added as a trainer.`,
+      });
+      
+      setAddTrainerOpen(false);
+      setNewTrainer({
+        name: "",
+        email: "",
+        phone: "",
+        specialty: "Fire Safety",
+        status: "active",
+        bio: "",
+        initials: ""
+      });
+      
+      // Refresh trainers list
+      fetchTrainers();
+      
+    } catch (error) {
+      console.error('Error adding trainer:', error);
+      toast({
+        title: "Error adding trainer",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleViewProfile = (trainerId) => {
@@ -301,6 +294,18 @@ const Trainers = () => {
                       <option value="Industrial Safety">Industrial Safety</option>
                     </select>
                   </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="bio" className="text-right">
+                      Bio
+                    </Label>
+                    <textarea
+                      id="bio"
+                      name="bio"
+                      value={newTrainer.bio}
+                      onChange={handleNewTrainerChange}
+                      className="col-span-3 flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="submit">Add Trainer</Button>
@@ -311,115 +316,139 @@ const Trainers = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {trainers
-          .filter(trainer => search ? trainer.name.toLowerCase().includes(search.toLowerCase()) : true)
-          .map((trainer) => (
-          <Card key={trainer.id} className="relative">
-            <CardContent className="p-4">
-              <div className="flex justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarImage src={trainer.avatar} />
-                    <AvatarFallback>
-                      {trainer.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-medium">{trainer.name}</h3>
-                    <Badge className={getSpecialtyColor(trainer.specialty)}>{trainer.specialty}</Badge>
-                  </div>
-                </div>
-                <Badge className={getStatusColor(trainer.status)}>
-                  {trainer.status.charAt(0).toUpperCase() + trainer.status.slice(1)}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="flex flex-col items-center justify-center p-2 bg-muted rounded-md">
-                  <span className="text-lg font-semibold">{trainer.trainings}</span>
-                  <span className="text-xs text-muted-foreground">Trainings</span>
-                </div>
-                <div className="flex flex-col items-center justify-center p-2 bg-muted rounded-md">
-                  <span className="text-lg font-semibold">{trainer.rating}</span>
-                  <span className="text-xs text-muted-foreground">Rating</span>
-                </div>
-              </div>
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm">
-                  <Info className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>{trainer.email}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>{trainer.phone}</span>
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleViewProfile(trainer.id)}
-                >
-                  Profile
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Message
-                </Button>
-              </div>
-            </CardContent>
-            <HoverCard>
-              <HoverCardTrigger asChild>
-                <Button variant="ghost" className="absolute top-0 right-0 h-8 w-8">
-                  <Info className="h-4 w-4" />
-                </Button>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-80" align="end">
-                <div className="flex space-x-4">
-                  <Avatar>
-                    <AvatarImage src={trainer.avatar} />
-                    <AvatarFallback>
-                      {trainer.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">{trainer.name}</h4>
-                    <div className="flex items-center text-xs">
-                      <Star className="h-3.5 w-3.5 mr-1 text-amber-500" />
-                      <span>{trainer.rating} rating</span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      <Calendar className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                      <span>{trainer.trainings} sessions conducted</span>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cambridge-blue"></div>
+        </div>
+      ) : trainers.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+            <UserPlus className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">No trainers found</h3>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
+            You haven't added any trainers yet. Get started by adding your first training specialist.
+          </p>
+          <Button onClick={() => setAddTrainerOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Your First Trainer
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {trainers
+            .filter(trainer => search ? trainer.name.toLowerCase().includes(search.toLowerCase()) : true)
+            .map((trainer) => (
+            <Card key={trainer.id} className="relative">
+              <CardContent className="p-4">
+                <div className="flex justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <Avatar>
+                      <AvatarImage src={trainer.avatar_url} />
+                      <AvatarFallback>
+                        {trainer.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-medium">{trainer.name}</h3>
+                      <Badge className={getSpecialtyColor(trainer.specialty)}>{trainer.specialty}</Badge>
                     </div>
                   </div>
+                  <Badge className={getStatusColor(trainer.status)}>
+                    {trainer.status.charAt(0).toUpperCase() + trainer.status.slice(1)}
+                  </Badge>
                 </div>
-                <div className="mt-4">
-                  <p className="text-sm">{trainer.bio}</p>
-                </div>
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center">
-                    <Award className="h-4 w-4 mr-2" /> 
-                    <h5 className="text-sm font-medium">Certifications</h5>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted rounded-md">
+                    <span className="text-lg font-semibold">{trainer.trainings}</span>
+                    <span className="text-xs text-muted-foreground">Trainings</span>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {trainer.certifications.map((cert, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {cert}
-                      </Badge>
-                    ))}
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted rounded-md">
+                    <span className="text-lg font-semibold">{trainer.rating || "N/A"}</span>
+                    <span className="text-xs text-muted-foreground">Rating</span>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <Button size="sm" className="w-full" onClick={() => handleViewProfile(trainer.id)}>
-                    View Full Profile
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm">
+                    <Info className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span>{trainer.email}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span>{trainer.phone}</span>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handleViewProfile(trainer.id)}
+                  >
+                    Profile
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Message
                   </Button>
                 </div>
-              </HoverCardContent>
-            </HoverCard>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <Button variant="ghost" className="absolute top-0 right-0 h-8 w-8">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80" align="end">
+                  <div className="flex space-x-4">
+                    <Avatar>
+                      <AvatarImage src={trainer.avatar_url} />
+                      <AvatarFallback>
+                        {trainer.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold">{trainer.name}</h4>
+                      <div className="flex items-center text-xs">
+                        <Star className="h-3.5 w-3.5 mr-1 text-amber-500" />
+                        <span>{trainer.rating || "No ratings yet"}</span>
+                      </div>
+                      <div className="flex items-center text-xs">
+                        <Calendar className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        <span>{trainer.trainings || 0} sessions conducted</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm">{trainer.bio || "No bio available."}</p>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center">
+                      <Award className="h-4 w-4 mr-2" /> 
+                      <h5 className="text-sm font-medium">Certifications</h5>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {trainer.certifications && trainer.certifications.length > 0 ? (
+                        trainer.certifications.map((cert, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {cert}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No certifications added</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <Button size="sm" className="w-full" onClick={() => handleViewProfile(trainer.id)}>
+                      View Full Profile
+                    </Button>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </Card>
+          ))}
+        </div>
+      )}
     </DashboardLayout>
   );
 };
